@@ -15,13 +15,13 @@ local DeviceScreen = Device.screen
 -- ScreenBase — shared full-screen game UI
 --
 -- Subclasses must implement:
---   :buildLayout()    — build all widgets and assign self.layout
---   :updateStatus([msg])  — refresh the status bar text
+--   :buildLayout()       — build all widgets and assign self.layout
+--   :updateStatus([msg]) — refresh the status bar text
 --
 -- Subclasses receive:
---   self.plugin       — the parent PluginBase instance
---   self.status_text  — TextWidget for the status bar (place it in layout)
---   self.dimen        — full-screen Geom
+--   self.plugin      — the parent PluginBase instance
+--   self.status_text — TextWidget for the status bar (place it in layout)
+--   self.dimen       — full-screen Geom
 --
 -- Subclasses may call:
 --   :isLandscape()
@@ -61,12 +61,13 @@ function ScreenBase:paintTo(bb, x, y)
     self.dimen.x = x
     self.dimen.y = y
     bb:paintRect(x, y, self.dimen.w, self.dimen.h, Blitbuffer.COLOR_WHITE)
+
     if not self.layout then return end
     local content_size = self.layout:getSize()
     local offset_x = x + math.floor((self.dimen.w - content_size.w) / 2)
     local offset_y = y
     if self.vertical_align == "center" then
-        offset_y = offset_y + math.floor((self.dimen.h - content_size.h) / 2)
+        offset_y = offset_y + math.max(0, math.floor((self.dimen.h - content_size.h) / 2))
     end
     self.layout:paintTo(bb, offset_x, offset_y)
 end
