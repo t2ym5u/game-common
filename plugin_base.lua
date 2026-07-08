@@ -2,7 +2,7 @@ local DataStorage     = require("datastorage")
 local LuaSettings     = require("luasettings")
 local UIManager       = require("ui/uimanager")
 local WidgetContainer = require("ui/widget/container/widgetcontainer")
-local _               = require("gettext")
+local _               = require("i18n")
 
 -- ---------------------------------------------------------------------------
 -- PluginBase — shared plugin lifecycle for all game plugins
