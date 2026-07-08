@@ -15,6 +15,7 @@ Shared library for all game plugins in this repository.
 | `score_tracker.lua` | Current score + best score persistence via plugin settings |
 | `menu_helper.lua` | Picker menu builder — difficulty, size, and generic option menus |
 | `settings_dialog.lua` | Multi-section settings dialog (picker, toggle, action, info rows) |
+| `i18n.lua` | Drop-in replacement for `gettext` — 350+ FR translations, falls back to KOReader gettext. Add `de`, `es`, … entries to extend. |
 
 ## How to use in a plugin
 

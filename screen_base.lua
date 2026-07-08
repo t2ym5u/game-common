@@ -7,7 +7,9 @@ local InputContainer  = require("ui/widget/container/inputcontainer")
 local TextViewer      = require("ui/widget/textviewer")
 local TextWidget      = require("ui/widget/textwidget")
 local UIManager       = require("ui/uimanager")
-local _               = require("gettext")
+local VerticalGroup   = require("ui/widget/verticalgroup")
+local VerticalSpan    = require("ui/widget/verticalspan")
+local _               = require("i18n")
 
 local DeviceScreen = Device.screen
 
@@ -94,6 +96,34 @@ function ScreenBase:closeScreen()
 end
 
 -- ---------------------------------------------------------------------------
+-- Fixed portrait layout helper
+-- ---------------------------------------------------------------------------
+
+-- Build a full-screen portrait layout with header pinned to top and footer
+-- pinned to bottom. Content is centred in the space between them.
+-- Call this from buildLayout() instead of building self.layout manually.
+--   header  — top button row widget (required)
+--   content — middle game area widget (required)
+--   footer  — bottom button/input widget, or nil
+function ScreenBase:buildPortraitLayout(header, content, footer)
+    local sh       = self.dimen.h
+    local header_h = header  and header:getSize().h  or 0
+    local content_h= content and content:getSize().h or 0
+    local footer_h = footer  and footer:getSize().h  or 0
+    local remaining = math.max(0, sh - header_h - content_h - footer_h)
+    local top_gap   = math.floor(remaining / 2)
+    local bot_gap   = remaining - top_gap
+    local items = { align = "center" }
+    if header  then items[#items+1] = header  end
+    items[#items+1] = VerticalSpan:new{ width = top_gap }
+    if content then items[#items+1] = content end
+    items[#items+1] = VerticalSpan:new{ width = bot_gap }
+    if footer  then items[#items+1] = footer  end
+    self.layout = VerticalGroup:new(items)
+    self[1] = self.layout
+end
+
+-- ---------------------------------------------------------------------------
 -- Status bar
 -- ---------------------------------------------------------------------------
 
@@ -139,8 +169,7 @@ function ScreenBase:makeRulesButtonConfig(en_text, fr_text)
     return {
         text     = _("Rules"),
         callback = function()
-            local lang = (G_reader_settings and G_reader_settings:readSetting("language") or "en"):sub(1, 2)
-            self:showRules((lang == "fr" and fr_text) or en_text)
+            self:showRules((_.lang() == "fr" and fr_text) or en_text)
         end,
     }
 end
