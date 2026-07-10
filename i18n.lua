@@ -460,6 +460,41 @@ local S = {
     ["My Game — Settings"]    = { fr = "Mon Jeu — Réglages" },
 
     -- -----------------------------------------------------------------------
+    -- Dashboard
+    -- -----------------------------------------------------------------------
+    ["Dashboard"]                            = { fr = "Tableau de bord" },
+    ["Open Dashboard"]                       = { fr = "Ouvrir le Dashboard" },
+    ["Show at startup"]                      = { fr = "Afficher au démarrage" },
+    ["Startup delay: %1 s"]                  = { fr = "Délai au démarrage : %1 s" },
+    ["Home button → Dashboard"]              = { fr = "Bouton Home → Dashboard" },
+    ["Reading"]                              = { fr = "Lecture" },
+    ["Recent games"]                         = { fr = "Derniers jeux" },
+    ["Play stats"]                           = { fr = "Statistiques de jeu" },
+    ["Actions"]                              = { fr = "Actions" },
+    ["No reading history."]                  = { fr = "Aucun historique de lecture." },
+    ["No games played yet."]                 = { fr = "Aucun jeu joué pour l'instant." },
+    ["Books: %1"]                            = { fr = "Livres : %1" },
+    ["Plugins installed: %1 — played: %2"]   = { fr = "Jeux installés : %1 — joués : %2" },
+    ["Update plugins"]                       = { fr = "MAJ plugins" },
+    ["Library"]                              = { fr = "Bibliothèque" },
+    ["just now"]                             = { fr = "à l'instant" },
+    ["%1 min"]                               = { fr = "%1 min" },
+    ["%1 h"]                                 = { fr = "%1 h" },
+    ["%1 d"]                                 = { fr = "%1 j" },
+    ["%1 sessions · %2"]                     = { fr = "%1 parties · %2" },
+    ["Time: %1"]                             = { fr = "Durée : %1" },
+    ["No stats yet."]                        = { fr = "Aucune statistique pour l'instant." },
+
+    -- -----------------------------------------------------------------------
+    -- Binairo
+    -- -----------------------------------------------------------------------
+    ["Binairo"]                              = { fr = "Binairo" },
+    ["Binairo — Settings"]                   = { fr = "Binairo — Réglages" },
+    ["Empty: %1"]                            = { fr = "Vides : %1" },
+    ["Solved! Time: %1"]                     = { fr = "Résolu ! Temps : %1" },
+    ["%1 error(s) highlighted."]             = { fr = "%1 erreur(s) mise(s) en évidence." },
+
+    -- -----------------------------------------------------------------------
     -- Misc status messages
     -- -----------------------------------------------------------------------
     ["Remaining: %1  |  Mode: %2"]   = { fr = "Restantes : %1  |  Mode : %2" },
