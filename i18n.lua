@@ -261,9 +261,14 @@ local S = {
     ["%1\xC3\x97%2 \xC2\xB7 %3 \xC2\xB7 Unknown: %4"] = { fr = "%1×%2 · %3 · Inconnues : %4" },
 
     -- -----------------------------------------------------------------------
-    -- KenKen / Cages
+    -- KenKen / Cages / Killer Sudoku
+    --
+    -- sudokukiller.koplugin is sudoku_common-family (vendors its own
+    -- common/), not game-common-family, so it has no reliable package.path
+    -- to this module and can't use i18n.extend() — its strings stay here.
     -- -----------------------------------------------------------------------
     ["  \xC2\xB7 Cage: %1/%2 cells, sum %3/%4"] = { fr = "  · Cage : %1/%2 cases, somme %3/%4" },
+    ["%1 (%2 cages)"] = { fr = "%1 (%2 cages)" },
 
     -- -----------------------------------------------------------------------
     -- Generic settings / skeleton placeholders (remove in real plugins)
