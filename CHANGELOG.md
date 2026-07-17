@@ -1,5 +1,17 @@
 # Changelog
 
+## [1.2.2] - 2026-07-17
+
+### Fixed
+- `chess_pieces.lua` and `chess_pieces_img/*.png` have been in this repo since
+  the initial commit, but manifest.json's `common.files` list never included
+  them, so PluginManager's `ensureCommon()` never fetched them onto real
+  devices. echecs/coursdechecs always fell back to pixel-art piece rendering
+  there, while local checkouts (which have every file on disk regardless of
+  the manifest) always rendered the real piece images. No code here changed;
+  this tag exists purely to bump the version so devices already on 1.2.1
+  redownload once the manifest is corrected.
+
 ## [1.2.0] - 2026-07-10
 
 ### Added
