@@ -502,6 +502,23 @@ local S = {
     ["%1/%2 — %3"]                   = { fr = "%1/%2 — %3" },
     [" | L:%1 R:%2"]                 = { fr = " | G:%1 D:%2" },
     ["%1/%2"]                        = { fr = "%1/%2" },
+
+    -- -----------------------------------------------------------------------
+    -- dice.koplugin
+    -- -----------------------------------------------------------------------
+    ["Dice"]                                = { fr = "Dés" },
+    ["Roll virtual dice with a configurable number of faces and dice."]
+                                             = { fr = "Lancez des dés virtuels avec un nombre de faces et de dés personnalisable." },
+    ["Number of faces…"]                    = { fr = "Nombre de faces…" },
+    ["Number of dice…"]                     = { fr = "Nombre de dés…" },
+    ["Number of faces"]                     = { fr = "Nombre de faces" },
+    ["Number of dice"]                      = { fr = "Nombre de dés" },
+    ["Roll"]                                = { fr = "Lancer" },
+    ["Custom…"]                             = { fr = "Personnalisé…" },
+    ["Custom number of faces"]              = { fr = "Nombre de faces personnalisé" },
+    ["%1 dice"]                             = { fr = "%1 dé(s)" },
+    ["Total: %1"]                           = { fr = "Total : %1" },
+    ["Faces: %1  |  Dice: %2"]              = { fr = "Faces : %1  |  Dés : %2" },
 }
 
 -- ---------------------------------------------------------------------------
