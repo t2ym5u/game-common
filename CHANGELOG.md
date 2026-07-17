@@ -1,5 +1,10 @@
 # Changelog
 
+## [1.2.4] - 2026-07-17
+
+### Added
+- `i18n.lua`: added French translations for `dice.koplugin` UI strings.
+
 ## [1.2.3] - 2026-07-17
 
 ### Removed
