@@ -1,5 +1,16 @@
 # Changelog
 
+## [1.2.5] - 2026-07-17
+
+### Changed
+- `i18n.lua`: added an `extend(tbl)` API so each plugin can merge its own
+  translations in from a local `i18n_fr.lua`, called via
+  `require("i18n").extend(lrequire("i18n_fr"))` in `main.lua`.
+- Moved ~35 plugins' plugin-specific translation strings out of the shared
+  table into each plugin's own repo (e.g. `dice.koplugin`, `dashboard.koplugin`,
+  `boggle.koplugin`, `balance.koplugin`, ...). Only strings genuinely shared
+  by several plugins remain here.
+
 ## [1.2.4] - 2026-07-17
 
 ### Added
