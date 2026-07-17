@@ -1,5 +1,15 @@
 # Changelog
 
+## [1.2.3] - 2026-07-17
+
+### Removed
+- `chess_pieces.lua` and `chess_pieces_img/*.png`, moved out to
+  `echecs.koplugin` and `coursdechecs.koplugin` as vendored, duplicated files.
+  They were only ever used by those two plugins — keeping them here meant
+  every other game-common consumer's shared-library fetch pulled chess PNGs
+  it would never use. Same rationale as the sudoku-common family's vendored,
+  diverged files.
+
 ## [1.2.2] - 2026-07-17
 
 ### Fixed
