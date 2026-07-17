@@ -1,5 +1,15 @@
 # Changelog
 
+## [1.2.6] - 2026-07-17
+
+### Fixed
+- `i18n.lua`: restore `sudokukiller.koplugin`'s one FR string here. That
+  plugin is sudoku_common-family (vendors its own `common/`), not
+  game-common-family, so it has no reliable `package.path` to this module —
+  the 1.2.5 migration wrongly moved it out to a local `i18n_fr.lua` and
+  called `i18n.extend()` at plugin load time, which crashed on load and
+  dropped the plugin from KOReader's Tools menu entirely.
+
 ## [1.2.5] - 2026-07-17
 
 ### Changed
