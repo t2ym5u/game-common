@@ -1,5 +1,20 @@
 # Changelog
 
+## [1.2.7] - 2026-07-29
+
+### Added
+- `keyboard_widget.lua`: shared on-screen letter keyboard (QWERTY/AZERTY,
+  optional ⌫/↵ special keys, optional per-key background coloring). Used by
+  `wordle`, `crossword`, `cryptogram`, `arrowwords`, and `wordladder`,
+  replacing each plugin's own hand-rolled `ButtonTable`-based keyboard.
+
+### Changed
+- `grid_widget_base.lua`: added a `max_value` option so the auto-sized
+  number font is measured against the widest string the widget will
+  actually paint (e.g. `n*n` for a fill-the-grid game) instead of always
+  assuming a single digit, which could overflow into neighboring cells on
+  larger grids. Used by `hidato` and `numbrix`.
+
 ## [1.2.6] - 2026-07-17
 
 ### Fixed

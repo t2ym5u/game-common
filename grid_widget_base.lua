@@ -39,6 +39,12 @@ end
 --   cols          (int)    — number of columns (required)
 --   rows          (int)    — number of rows (defaults to cols)
 --   size_ratio    (float)  — fraction of min(screen_w, screen_h) to use (default 0.82)
+--   max_value     (int)    — largest number ever painted with number_face
+--                            (default 9). Set this to e.g. n*n for a
+--                            fill-the-grid game so the auto-sized font is
+--                            measured against the real digit count instead
+--                            of assuming a single digit, which would
+--                            otherwise overflow into neighboring cells.
 --
 -- Subclasses must implement:
 --   :paintTo(bb, x, y)
@@ -56,6 +62,7 @@ local GridWidgetBase = InputContainer:extend{
     cols       = 9,
     rows       = nil,    -- defaults to cols
     size_ratio = 0.82,
+    max_value  = 9,
 }
 
 function GridWidgetBase:init()
@@ -99,12 +106,12 @@ function GridWidgetBase:_initFonts()
     local cell_h = self.cell_h
     local min_cell = math.min(cell_w, cell_h)
 
-    local function bsearchFont(font_name, lo, hi, max_w, max_h)
+    local function bsearchFont(font_name, lo, hi, max_w, max_h, sample)
         local best = lo
         while lo <= hi do
             local mid = math.floor((lo + hi) / 2)
             local face = Font:getFace(font_name, mid)
-            local m    = RenderText:sizeUtf8Text(0, max_w, face, "8", true, false)
+            local m    = RenderText:sizeUtf8Text(0, max_w, face, sample, true, false)
             if m.x <= max_w and (m.y_bottom - m.y_top) <= max_h then
                 best = mid
                 lo   = mid + 1
@@ -115,17 +122,23 @@ function GridWidgetBase:_initFonts()
         return best
     end
 
+    -- Measure against the widest string the widget will actually paint
+    -- (see max_value doc above) instead of assuming a single digit.
+    local number_sample = string.rep("8", #tostring(self.max_value or 9))
+
     -- Main number font: fits in the full cell (keep same -2 safety margin)
     local num_padding = math.max(2, math.floor(min_cell / 9))
     local num_safety  = math.max(1, math.floor(min_cell / 20))
     local max_nw = math.max(1, math.floor(cell_w - 2 * num_padding - num_safety))
     local max_nh = math.max(1, math.floor(cell_h - 2 * num_padding - num_safety))
     local num_hi = math.max(10, math.floor(min_cell * 0.6))
-    local num_size = math.max(10, bsearchFont("cfont", 10, num_hi, max_nw, max_nh) - 2)
+    local num_size = math.max(10, bsearchFont("cfont", 10, num_hi, max_nw, max_nh, number_sample) - 2)
     self.number_face    = Font:getFace("cfont", num_size)
     self.number_padding = num_padding
 
-    -- Small note font: fits in a cell third (for candidate annotations)
+    -- Small note font: fits in a cell third (for candidate annotations).
+    -- Notes are always single digits (1..9 candidates), regardless of
+    -- max_value, so this one keeps measuring against "8".
     local mini_w = cell_w / 3
     local mini_h = cell_h / 3
     local min_mini = math.min(mini_w, mini_h)
@@ -134,7 +147,7 @@ function GridWidgetBase:_initFonts()
     local max_mw = math.max(1, math.floor(mini_w - 2 * note_padding - note_safety))
     local max_mh = math.max(1, math.floor(mini_h - 2 * note_padding - note_safety))
     local note_hi = math.max(8, math.floor(min_mini * 0.6))
-    local note_size = math.max(8, bsearchFont("smallinfofont", 8, note_hi, max_mw, max_mh) - 1)
+    local note_size = math.max(8, bsearchFont("smallinfofont", 8, note_hi, max_mw, max_mh, "8") - 1)
     self.note_face    = Font:getFace("smallinfofont", note_size)
     self.note_padding = note_padding
 end
