@@ -217,6 +217,20 @@ end
 -- a broken button.
 -- ---------------------------------------------------------------------------
 
+-- How a hint reads. Level 1 points at what is about to give, level 2 says
+-- what was done. Cell puzzles get this default; anything whose unit is not a
+-- cell overrides it in its own screen.lua.
+function ScreenBase:describeHintStep(step, level)
+    if level == 1 then
+        return step.kind == "mistake"
+            and T(_("R%1C%2 is wrong. Tap Hint again to clear it."), step.r, step.c)
+            or  T(_("R%1C%2 can be worked out. Tap Hint again to fill it in."), step.r, step.c)
+    end
+    return step.kind == "mistake"
+        and T(_("Cleared R%1C%2."), step.r, step.c)
+        or  T(_("Filled in R%1C%2."), step.r, step.c)
+end
+
 function ScreenBase:onHint()
     local board = self.board
     if not board or not board.findHint then
@@ -240,17 +254,24 @@ function ScreenBase:onHint()
     -- The level is derived by comparing the target rather than stored, so it
     -- cannot go stale: solve that cell yourself and the next hint starts over.
     local prev  = self.hint_cell
-    local same  = prev and prev.r == step.r and prev.c == step.c and prev.kind == step.kind
+    -- An edge puzzle can offer two different moves at the same r,c (the
+    -- horizontal one and the vertical one), so the optional `tag` separates
+    -- them; cell puzzles leave it nil and compare on r,c alone.
+    local same  = prev and prev.r == step.r and prev.c == step.c
+                  and prev.kind == step.kind and prev.tag == step.tag
     local level = same and (prev.level + 1) or 1
-    self.hint_cell = { r = step.r, c = step.c, kind = step.kind, level = level }
+    self.hint_cell = { r = step.r, c = step.c, kind = step.kind, tag = step.tag, level = level }
 
     if board.setSelection then board:setSelection(step.r, step.c) end
 
     if level == 1 then
         if self.board_widget then self.board_widget:refresh() end
-        self:updateStatus(step.kind == "mistake"
-            and T(_("R%1C%2 is wrong. Tap Hint again to clear it."), step.r, step.c)
-            or  T(_("R%1C%2 can be worked out. Tap Hint again to fill it in."), step.r, step.c))
+        -- Puzzles whose unit is not a cell -- an edge, a bridge, a rectangle,
+        -- a loop segment -- override describeHintStep, since "R3C4" would say
+        -- the wrong thing there. Wording lives in the screen, not the board:
+        -- a board that formats UI strings drags KOReader's ffi/util into
+        -- every headless unit test that touches it.
+        self:updateStatus(self:describeHintStep(step, 1))
         return
     end
 
@@ -263,9 +284,8 @@ function ScreenBase:onHint()
     self.hint_cell = nil
     if self.board_widget then self.board_widget:refresh() end
     if self.plugin and self.plugin.saveState then self.plugin:saveState() end
-    self:updateStatus(step.kind == "mistake"
-        and T(_("Cleared R%1C%2. Hints used: %3."), step.r, step.c, board:getHintsUsed())
-        or  T(_("Filled in R%1C%2. Hints used: %3."), step.r, step.c, board:getHintsUsed()))
+    self:updateStatus(T(_("%1 Hints used: %2."),
+        self:describeHintStep(step, 2), board:getHintsUsed()))
 end
 
 -- ---------------------------------------------------------------------------
