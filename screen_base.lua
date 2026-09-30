@@ -12,6 +12,7 @@ local UIManager       = require("ui/uimanager")
 local VerticalGroup   = require("ui/widget/verticalgroup")
 local VerticalSpan    = require("ui/widget/verticalspan")
 local _               = require("i18n")
+local T               = require("ffi/util").template
 
 local DeviceScreen = Device.screen
 
@@ -201,6 +202,70 @@ function ScreenBase:makeCloseButtonConfig()
         text     = _("Close"),
         callback = function() self:closeScreen() end,
     }
+end
+
+-- ---------------------------------------------------------------------------
+-- Hint button
+--
+-- Two taps, not one: the first says which cell is about to give, the second
+-- acts on it. That gap is the whole point -- a player who is told where to
+-- look usually finds the rest themselves, and only pays for the full reveal
+-- if they want it.
+--
+-- Works on any board that has been through Hint.install() (see
+-- common/hint.lua); screens whose board has not get a plain message instead of
+-- a broken button.
+-- ---------------------------------------------------------------------------
+
+function ScreenBase:onHint()
+    local board = self.board
+    if not board or not board.findHint then
+        self:updateStatus(_("Hints are not available here."))
+        return
+    end
+    if board.isShowingSolution and board:isShowingSolution() then
+        self:updateStatus(_("Hide the solution to keep playing."))
+        return
+    end
+
+    local step, reason = board:findHint()
+    if not step then
+        self.hint_cell = nil
+        self:updateStatus(reason == "complete"
+            and _("Nothing left to fill in.")
+            or  _("No hint is available here."))
+        return
+    end
+
+    -- The level is derived by comparing the target rather than stored, so it
+    -- cannot go stale: solve that cell yourself and the next hint starts over.
+    local prev  = self.hint_cell
+    local same  = prev and prev.r == step.r and prev.c == step.c and prev.kind == step.kind
+    local level = same and (prev.level + 1) or 1
+    self.hint_cell = { r = step.r, c = step.c, kind = step.kind, level = level }
+
+    if board.setSelection then board:setSelection(step.r, step.c) end
+
+    if level == 1 then
+        if self.board_widget then self.board_widget:refresh() end
+        self:updateStatus(step.kind == "mistake"
+            and T(_("R%1C%2 is wrong. Tap Hint again to clear it."), step.r, step.c)
+            or  T(_("R%1C%2 can be worked out. Tap Hint again to fill it in."), step.r, step.c))
+        return
+    end
+
+    if not board:applyHint(step) then
+        self.hint_cell = nil
+        self:updateStatus(_("No hint is available here."))
+        return
+    end
+    board:noteHintUsed()
+    self.hint_cell = nil
+    if self.board_widget then self.board_widget:refresh() end
+    if self.plugin and self.plugin.saveState then self.plugin:saveState() end
+    self:updateStatus(step.kind == "mistake"
+        and T(_("Cleared R%1C%2. Hints used: %3."), step.r, step.c, board:getHintsUsed())
+        or  T(_("Filled in R%1C%2. Hints used: %3."), step.r, step.c, board:getHintsUsed()))
 end
 
 -- ---------------------------------------------------------------------------
