@@ -8,6 +8,7 @@ Shared library for all game plugins in this repository.
 |---|---|
 | `plugin_base.lua` | Base plugin class — settings, menu registration, screen lifecycle |
 | `screen_base.lua` | Base full-screen widget — layout, status bar, close, portrait/landscape |
+| `hint.lua` | Hint button machinery — `Hint.install(BoardClass, spec)` gives a board `findHint`/`applyHint`; `ScreenBase:onHint` drives the two-tap reveal |
 | `grid_widget_base.lua` | Base grid board widget — sizing, fonts, tap + long-press, refresh |
 | `grid_utils.lua` | Grid / table utilities — create, copy, shuffle, map, filter |
 | `undo_stack.lua` | Generic undo stack with optional max size and serialization |
@@ -74,3 +75,37 @@ GridWidgetBase (grid_widget_base.lua)
 ## Minimal plugin skeleton
 
 See `_skeleton.koplugin/` for a ready-to-copy starting point.
+
+## Hints
+
+`ScreenBase:onHint()` is shared, but boards are not: some keep a grid of
+digits, some booleans, some rectangles or bridges. So a board describes itself
+once and gets the rest for free:
+
+```lua
+Hint.install(BinairoBoard, {
+    isEmpty     = function(v) return v == nil end,   -- 0 is a real value here
+    getUser     = function(b, r, c) return b.cells[r] and b.cells[r][c] end,
+    getSolution = function(b, r, c) return b.solution[r][c] end,
+    isGiven     = function(b, r, c) return b.given[r] and b.given[r][c] end,
+    setCell     = function(b, r, c, v) return b:setCellValue(r, c, v) end,
+})
+```
+
+Two things are worth getting right in a spec:
+
+- **`isEmpty`** decides what counts as an untouched cell. The default (nil, 0
+  or false) is wrong wherever one of those is a real value — binairo's 0, for
+  instance — and would make the module offer to "fill" cells the player has
+  already answered.
+- **`equals`** decides what counts as a mistake. Where a board has optional
+  annotations (a nonogram X, a light-up dot, a star-battle dot), compare only
+  the state that decides the puzzle, or the player gets told their perfectly
+  correct notes are errors.
+
+There is no deductive solver behind this, unlike sudoku-common's: the cell
+offered is chosen by a neighbour-count heuristic (cells next to filled ones
+read as the ones a player could plausibly work out), and the reveal comes from
+the stored solution. The choice is deliberately deterministic — `ScreenBase`
+tells "show me where" from "now fill it" by checking whether the target moved,
+so a randomised pick would reset to step one on every tap and never reveal.
