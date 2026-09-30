@@ -1,5 +1,17 @@
 # Changelog
 
+## [1.3.0] - 2026-09-30
+
+### Added
+- `hint.lua` — the machinery behind the Hint button. Boards differ far more
+  than they look (grids of digits, grids of booleans, rectangles, bridges), so
+  a board describes itself once through a spec table and gets `findHint` and
+  `applyHint` for free via `Hint.install`.
+- `ScreenBase:onHint()` — drives the two-tap reveal: the first tap names the
+  cell that is about to give, the second acts on it. A cell contradicting the
+  solution always takes priority over revealing a fresh one, and is emptied
+  rather than solved.
+
 ## [1.2.7] - 2026-07-29
 
 ### Added
