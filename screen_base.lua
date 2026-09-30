@@ -179,9 +179,21 @@ end
 -- Status bar
 -- ---------------------------------------------------------------------------
 
+-- Changing the status text changes its width, and VerticalGroup caches both
+-- its own size and each child's offset the first time it is measured. Without
+-- invalidating that, a status line longer than the one present when the layout
+-- was built keeps the *old* centring and runs off the right edge -- visible on
+-- any screen whose status grows during play.
+local function resetLayoutTree(widget, depth)
+    if type(widget) ~= "table" or (depth or 0) > 6 then return end
+    if widget.resetLayout then widget:resetLayout() end
+    for i = 1, #widget do resetLayoutTree(widget[i], (depth or 0) + 1) end
+end
+
 function ScreenBase:updateStatus(msg)
     if not self.status_text then return end
     self.status_text:setText(msg or "")
+    if self.layout then resetLayoutTree(self.layout, 0) end
     UIManager:setDirty(self, function() return "ui", self.dimen end)
 end
 
