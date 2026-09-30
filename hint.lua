@@ -46,7 +46,7 @@ local function neighbourWeight(board, spec, r, c, rows, cols)
 end
 
 -- spec (every callback takes the board as its first argument):
---   rows, cols            -- grid extent (default board.n for both)
+--   rows, cols            -- grid extent (default board.rows/cols, else board.n)
 --   getUser(board,r,c)    -- what the player currently has there
 --   getSolution(board,r,c)
 --   isGiven(board,r,c)    -- optional: cells the player may not edit
@@ -61,8 +61,10 @@ end
 --   { kind = "fill",    r, c, value }
 --   nil, "complete"                    -- nothing left that differs
 function Hint.gridHint(board, spec)
-    local rows    = spec.rows or board.n
-    local cols    = spec.cols or board.n
+    -- Most boards are square and carry `n`; minesweeper's presets are
+    -- rectangular and carry rows/cols instead, so honour those too.
+    local rows    = spec.rows or board.rows or board.n
+    local cols    = spec.cols or board.cols or board.n
     local isEmpty = spec.isEmpty or defaultIsEmpty
     local equals  = spec.equals or function(a, b) return a == b end
     spec.isEmpty  = isEmpty
