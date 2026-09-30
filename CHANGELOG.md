@@ -1,5 +1,23 @@
 # Changelog
 
+## [1.5.0] - 2026-09-30
+
+### Added
+- `PluginBase:getPluginId()` -- the plugin's stable id, captured at init time.
+- `PluginBase:stopPlugin()` and `PluginBase:deletePluginSettings()`, the hooks
+  KOReader 2026.07 calls when a plugin is deleted from the device (PR #15240).
+  The first closes an open game screen, the second drops the game's row from
+  the shared `game_stats.lua` so a deleted game stops showing up in Dashboard.
+- `StatsExporter:remove()`.
+
+### Fixed
+- Play statistics were recorded under a key no tool could match.
+  `ReaderUI`/`FileManager:registerModule()` rewrite a plugin instance's `name`
+  to `reader<id>` / `filemanager<id>` immediately after it is built, so every
+  game's stats were split across two rows and neither one carried the plugin's
+  actual id. Settings and stats are now keyed on `getPluginId()`, and rows
+  written under the old keys are merged back on first read.
+
 ## [1.3.0] - 2026-09-30
 
 ### Added
