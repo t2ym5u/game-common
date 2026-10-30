@@ -35,6 +35,7 @@ local S = {
     -- Common buttons
     -- -----------------------------------------------------------------------
     ["New game"]    = { fr = "Nouvelle partie", es = "Nueva partida", de = "Neues Spiel" },
+    ["Daily Challenge"] = { fr = "Défi du jour", es = "Desafío diario", de = "Tägliche Herausforderung" },
     ["New"]         = { fr = "Nouveau", es = "Nuevo", de = "Neu" },
     ["Close"]       = { fr = "Fermer", es = "Cerrar", de = "Schließen" },
     ["Rules"]       = { fr = "Règles", es = "Reglas", de = "Regeln" },
