@@ -1,16 +1,23 @@
 local Blitbuffer      = require("ffi/blitbuffer")
 local ButtonDialog    = require("ui/widget/buttondialog")
+local ButtonTable     = require("ui/widget/buttontable")
+local CenterContainer = require("ui/widget/container/centercontainer")
 local Device          = require("device")
 local Font            = require("ui/font")
 local Geom            = require("ui/geometry")
 local InfoMessage     = require("ui/widget/infomessage")
 local InputContainer  = require("ui/widget/container/inputcontainer")
+local RenderText      = require("ui/rendertext")
+local Size            = require("ui/size")
+local TextBoxWidget   = require("ui/widget/textboxwidget")
 local TextViewer      = require("ui/widget/textviewer")
 local TextWidget      = require("ui/widget/textwidget")
 local TitleBar        = require("ui/widget/titlebar")
 local UIManager       = require("ui/uimanager")
 local VerticalGroup   = require("ui/widget/verticalgroup")
 local VerticalSpan    = require("ui/widget/verticalspan")
+local Widget          = require("ui/widget/widget")
+local WidgetContainer = require("ui/widget/container/widgetcontainer")
 local _               = require("i18n")
 local T               = require("ffi/util").template
 
@@ -25,7 +32,7 @@ local DeviceScreen = Device.screen
 --
 -- Subclasses receive:
 --   self.plugin      — the parent PluginBase instance
---   self.status_text — TextWidget for the status bar (place it in layout)
+--   self.status_text — StatusLine for the status bar (place it in layout)
 --   self.dimen       — full-screen Geom
 --
 -- Subclasses may call:
@@ -33,6 +40,130 @@ local DeviceScreen = Device.screen
 --   :showMessage(msg, timeout)
 --   :closeScreen()
 -- ---------------------------------------------------------------------------
+
+-- ---------------------------------------------------------------------------
+-- StatusLine — the status bar widget (self.status_text)
+--
+-- Same calls as the TextWidget it replaces (setText, setMaxWidth, getSize,
+-- paintTo), but in landscape it wraps over several lines: the controls there
+-- are a narrow side panel with height to spare, and a one-line TextWidget cut
+-- every turn-based game's status off with "…". Portrait keeps one line, since
+-- the board is sized around a one-line footer.
+-- ---------------------------------------------------------------------------
+
+local STATUS_SEP = " · "
+local NBSP       = "\u{00A0}"
+
+-- Wrap only between status parts: spaces inside a part ("Black to move")
+-- become non-breaking, so a line never ends in the middle of one. A part too
+-- long for a line on its own ("Congratulations! Puzzle solved.") keeps its
+-- spaces, or the only break left would be mid-word.
+local function keepPartsWhole(text, face, max_width)
+    local out = {}
+    for part in (text .. STATUS_SEP):gmatch("(.-)" .. STATUS_SEP:gsub("%p", "%%%0")) do
+        local w = RenderText:sizeUtf8Text(0, DeviceScreen:getWidth(), face, part, true, false).x
+        out[#out + 1] = w <= max_width and part:gsub(" ", NBSP) or part
+    end
+    return table.concat(out, STATUS_SEP)
+end
+
+local StatusLine = Widget:extend{
+    text      = "",
+    face      = nil,
+    max_width = nil,
+}
+
+function StatusLine:_widget()
+    if not self._w then
+        local wrap = self.max_width and DeviceScreen:getWidth() > DeviceScreen:getHeight()
+        if wrap then
+            self._w = TextBoxWidget:new{
+                text      = keepPartsWhole(self.text, self.face, self.max_width),
+                face      = self.face,
+                width     = self.max_width,
+                alignment = "center",
+            }
+        else
+            self._w = TextWidget:new{
+                text      = self.text,
+                face      = self.face,
+                max_width = self.max_width,
+            }
+        end
+    end
+    return self._w
+end
+
+function StatusLine:free()
+    if self._w then self._w:free() end
+    self._w = nil
+end
+
+function StatusLine:setText(text)
+    if text == self.text then return end
+    self.text = text
+    self:free()
+end
+
+function StatusLine:setMaxWidth(max_width)
+    if max_width == self.max_width then return end
+    self.max_width = max_width
+    self:free()
+end
+
+function StatusLine:getSize()
+    return self:_widget():getSize()
+end
+
+function StatusLine:paintTo(bb, x, y)
+    self:_widget():paintTo(bb, x, y)
+end
+
+-- ---------------------------------------------------------------------------
+-- ActionBar -- the bottom ButtonTable, swappable in place
+--
+-- Once a round is over, the game's actions (Check, Hint, Undo...) have nothing
+-- left to act on, and starting the next round used to mean opening the title-bar
+-- menu. So the bar then shows the round-over buttons instead (one full-width
+-- "New game" by default), kept at the bar's height so nothing else moves.
+-- getButtonById still reaches the normal buttons while they are hidden.
+-- ---------------------------------------------------------------------------
+
+local ActionBar = WidgetContainer:extend{
+    width      = nil,
+    rows       = nil,
+    round_over = false,
+}
+
+function ActionBar:init()
+    -- A game with no bottom actions (a keyboard game) passes no rows: the bar
+    -- is then empty during play and only appears once the round is over.
+    if #self.rows == 0 then
+        self.normal = Widget:new{ dimen = Geom:new{ w = self.width, h = 0 } }
+    else
+        self.normal = ButtonTable:new{ width = self.width, buttons = self.rows }
+    end
+    self.normal_h = self.normal:getSize().h
+    self:setRoundOverButtons(self.over_row)
+end
+
+-- over_row: one row of ButtonTable button specs, or nil for the normal bar.
+function ActionBar:setRoundOverButtons(over_row)
+    self.round_over = over_row ~= nil
+    if not over_row then
+        self[1] = self.normal
+        return
+    end
+    local bt = ButtonTable:new{ width = self.width, buttons = { over_row } }
+    self[1] = CenterContainer:new{
+        dimen = Geom:new{ w = self.width, h = math.max(self.normal_h, bt:getSize().h) },
+        bt,
+    }
+end
+
+function ActionBar:getButtonById(id)
+    return self.normal.getButtonById and self.normal:getButtonById(id)
+end
 
 local ScreenBase = InputContainer:extend{
     vertical_align = "center",
@@ -46,7 +177,7 @@ function ScreenBase:init()
         self.key_events = { Close = { { Device.input.group.Back } } }
     end
 
-    self.status_text = TextWidget:new{
+    self.status_text = StatusLine:new{
         text = "",
         face = Font:getFace("smallinfofont"),
     }
@@ -198,6 +329,119 @@ function ScreenBase:updateStatus(msg)
 end
 
 -- ---------------------------------------------------------------------------
+-- Shared controls
+--
+-- Every game builds its bottom controls through these, so the action bar, the
+-- number pad and the status line look and size the same across the fleet:
+-- full-width rows of equal buttons (no shrink_unneeded_width, which centred a
+-- cramped cluster of labels and left each game with a different footprint),
+-- and status parts joined with one separator.
+-- ---------------------------------------------------------------------------
+
+-- Outer gutter between the screen edge and the board or the controls.
+function ScreenBase:getGutter()
+    return Size.padding.large
+end
+
+-- Width of the controls column: the screen minus its gutters in portrait, a
+-- side panel next to the board in landscape.
+function ScreenBase:getControlsWidth()
+    local sw = self.dimen.w
+    if self:isLandscape() then
+        return math.floor(sw * 0.36)
+    end
+    return sw - 2 * self:getGutter()
+end
+
+-- rows: either one row ({ btn, btn, ... }) or a list of rows. Each btn is a
+-- ButtonTable button spec ({ text, callback, id, enabled, ... }). `{}` builds
+-- a bar that stays empty until the round is over.
+-- The bar is remembered as self.action_bar (the last one built), which is the
+-- one refreshActionBar() swaps when the round ends.
+function ScreenBase:buildActionBar(rows, width)
+    if rows[1] and rows[1].text then rows = { rows } end
+    local bar = ActionBar:new{
+        width    = width or self:getControlsWidth(),
+        rows     = rows,
+        over_row = self:isRoundOver() and self:getRoundOverButtons() or nil,
+    }
+    self.action_bar = bar
+    return bar
+end
+
+-- Round-over hooks. A game overrides isRoundOver() (won, lost, solved...) and
+-- calls refreshActionBar() after anything that can end or restart a round; the
+-- bar then offers the next round in place of the game's actions. A game whose
+-- next round isn't onNewGame (a next word, a next level) overrides
+-- getRoundOverButtons().
+function ScreenBase:isRoundOver()
+    return false
+end
+
+function ScreenBase:getRoundOverButtons()
+    return { { text = _("New game"), callback = function() self:onNewGame() end } }
+end
+
+function ScreenBase:refreshActionBar()
+    local bar = self.action_bar
+    if not bar then return end
+    local over = self:isRoundOver() and true or false
+    if over == bar.round_over then return end
+    local old_h = bar:getSize().h
+    bar:setRoundOverButtons(over and self:getRoundOverButtons() or nil)
+    -- Only an empty bar changes height; the board then has to be resized.
+    if bar:getSize().h ~= old_h then
+        self:buildLayout()
+    end
+    UIManager:setDirty(self, function() return "ui", self.dimen end)
+end
+
+-- keys: list of ButtonTable button specs, one per value. Up to nine keys fit
+-- on one row; more are split over two even rows (0-9 becomes 5 + 5).
+function ScreenBase:buildNumberPad(keys, width)
+    local per_row = #keys <= 9 and #keys or math.ceil(#keys / 2)
+    local rows, row = {}, {}
+    for i, key in ipairs(keys) do
+        row[#row + 1] = key
+        if #row == per_row or i == #keys then
+            rows[#rows + 1] = row
+            row = {}
+        end
+    end
+    return ButtonTable:new{
+        width   = width or self:getControlsWidth(),
+        buttons = rows,
+    }
+end
+
+-- The one status separator. nil and "" parts are dropped, so callers can
+-- pass optional parts inline: self:joinStatus(size, diff, extra_or_nil).
+ScreenBase.STATUS_SEP = STATUS_SEP
+
+function ScreenBase:joinStatus(...)
+    local parts = {}
+    for i = 1, select("#", ...) do
+        local p = select(i, ...)
+        if p ~= nil and p ~= "" then parts[#parts + 1] = tostring(p) end
+    end
+    return table.concat(parts, ScreenBase.STATUS_SEP)
+end
+
+-- Room left for the board (including its frame) once the title bar and the
+-- controls are placed. `controls` is the widget that will sit under the board
+-- in portrait (status + pads + action bar), or beside it in landscape.
+-- Returns w, h.
+function ScreenBase:getBoardBudget(title_bar, controls)
+    local g  = self:getGutter()
+    local sw, sh = self.dimen.w, self.dimen.h
+    local avail_h = sh - (title_bar and title_bar:getSize().h or 0)
+    if self:isLandscape() then
+        return sw - self:getControlsWidth() - 3 * g, avail_h - 2 * g
+    end
+    return sw - 2 * g, avail_h - (controls and controls:getSize().h or 0) - 3 * g
+end
+
+-- ---------------------------------------------------------------------------
 -- Key events
 -- ---------------------------------------------------------------------------
 
@@ -295,9 +539,20 @@ function ScreenBase:onHint()
     board:noteHintUsed()
     self.hint_cell = nil
     if self.board_widget then self.board_widget:refresh() end
-    if self.plugin and self.plugin.saveState then self.plugin:saveState() end
-    self:updateStatus(T(_("%1 Hints used: %2."),
-        self:describeHintStep(step, 2), board:getHintsUsed()))
+    -- Pass the game's state like closeScreen does: PluginBase:saveState(nil)
+    -- would store nil and wipe the save after every hint.
+    if self.plugin and self.plugin.saveState then
+        self.plugin:saveState(self.serializeState and self:serializeState() or nil)
+    end
+    -- The hint may have filled the last cell: then the game's own status
+    -- (its congratulations) says more than "Filled in R6C5".
+    if self:isRoundOver() then
+        self:updateStatus()
+    else
+        self:updateStatus(T(_("%1 Hints used: %2."),
+            self:describeHintStep(step, 2), board:getHintsUsed()))
+    end
+    self:refreshActionBar()
 end
 
 -- ---------------------------------------------------------------------------

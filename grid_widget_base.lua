@@ -39,6 +39,7 @@ end
 --   cols          (int)    — number of columns (required)
 --   rows          (int)    — number of rows (defaults to cols)
 --   size_ratio    (float)  — fraction of min(screen_w, screen_h) to use (default 0.82)
+--   max_size      (int)    — side in pixels; overrides size_ratio when set
 --   max_value     (int)    — largest number ever painted with number_face
 --                            (default 9). Set this to e.g. n*n for a
 --                            fill-the-grid game so the auto-sized font is
@@ -73,6 +74,11 @@ function GridWidgetBase:init()
 
     local min_dim  = math.min(Screen:getWidth(), Screen:getHeight())
     self.size      = math.floor(min_dim * (self.size_ratio or 0.82))
+    -- A screen that knows how much room it has (ScreenBase:getBoardBudget)
+    -- passes it here instead of relying on a fixed ratio of the screen.
+    if self.max_size then
+        self.size = math.max(cols, math.floor(self.max_size))
+    end
     self.cell_w    = self.size / cols
     self.cell_h    = self.size / rows
     self.cell_w_px = math.ceil(self.size / cols)
@@ -111,8 +117,13 @@ function GridWidgetBase:_initFonts()
         while lo <= hi do
             local mid = math.floor((lo + hi) / 2)
             local face = Font:getFace(font_name, mid)
-            local m    = RenderText:sizeUtf8Text(0, max_w, face, sample, true, false)
-            if m.x <= max_w and (m.y_bottom - m.y_top) <= max_h then
+            -- Measure unbounded: with max_w as the limit sizeUtf8Text cuts the
+            -- text at max_w, so the width test could never fail. y_top and
+            -- y_bottom are ink above and below the baseline, both positive,
+            -- so the ink height is their sum (their difference is negative
+            -- for digits and let every size through).
+            local m    = RenderText:sizeUtf8Text(0, Screen:getWidth(), face, sample, true, false)
+            if m.x <= max_w and (m.y_top + m.y_bottom) <= max_h then
                 best = mid
                 lo   = mid + 1
             else
@@ -131,7 +142,7 @@ function GridWidgetBase:_initFonts()
     local num_safety  = math.max(1, math.floor(min_cell / 20))
     local max_nw = math.max(1, math.floor(cell_w - 2 * num_padding - num_safety))
     local max_nh = math.max(1, math.floor(cell_h - 2 * num_padding - num_safety))
-    local num_hi = math.max(10, math.floor(min_cell * 0.6))
+    local num_hi = math.max(10, math.floor(min_cell))
     local num_size = math.max(10, bsearchFont("cfont", 10, num_hi, max_nw, max_nh, number_sample) - 2)
     self.number_face    = Font:getFace("cfont", num_size)
     self.number_padding = num_padding
@@ -146,7 +157,7 @@ function GridWidgetBase:_initFonts()
     local note_safety  = math.max(1, math.floor(min_mini / 18))
     local max_mw = math.max(1, math.floor(mini_w - 2 * note_padding - note_safety))
     local max_mh = math.max(1, math.floor(mini_h - 2 * note_padding - note_safety))
-    local note_hi = math.max(8, math.floor(min_mini * 0.6))
+    local note_hi = math.max(8, math.floor(min_mini))
     local note_size = math.max(8, bsearchFont("smallinfofont", 8, note_hi, max_mw, max_mh, "8") - 1)
     self.note_face    = Font:getFace("smallinfofont", note_size)
     self.note_padding = note_padding

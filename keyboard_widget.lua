@@ -1,8 +1,8 @@
 -- ---------------------------------------------------------------------------
 -- keyboard_widget — shared on-screen letter keyboard
 --
--- Bordered, evenly spaced keys shaped like a physical keyboard (QWERTY or
--- AZERTY), with optional ⌫ (pinned at the end of the top row) and ↵
+-- Bordered, evenly spaced keys shaped like a physical keyboard (QWERTY,
+-- AZERTY or QWERTZ, following KOReader's language by default), with optional ⌫ (pinned at the end of the top row) and ↵
 -- (pinned at the end of the home row, next to L/M) special keys, and
 -- optional per-key background coloring (e.g. Wordle's
 -- correct/present/absent feedback).
@@ -30,8 +30,37 @@ local ROWS_AZERTY = {
     {"W","X","C","V","B","N"},
 }
 
+local ROWS_QWERTZ = {
+    {"Q","W","E","R","T","Z","U","I","O","P"},
+    {"A","S","D","F","G","H","J","K","L"},
+    {"Y","X","C","V","B","N","M"},
+}
+
 KeyboardWidget.ROWS_QWERTY = ROWS_QWERTY
 KeyboardWidget.ROWS_AZERTY = ROWS_AZERTY
+KeyboardWidget.ROWS_QWERTZ = ROWS_QWERTZ
+
+local ROWS_BY_LAYOUT = {
+    qwerty = ROWS_QWERTY,
+    azerty = ROWS_AZERTY,
+    qwertz = ROWS_QWERTZ,
+}
+
+-- The layout follows the language KOReader's own UI is set to, not the
+-- language of a game's word list: the player's hands know the keyboard of
+-- their device, and someone on a French device playing English words still
+-- looks for A at top left.
+local LAYOUT_BY_LANGUAGE = {
+    fr = "azerty",
+    de = "qwertz",
+}
+
+function KeyboardWidget.layoutForLanguage(lang)
+    if not lang then
+        lang = G_reader_settings and G_reader_settings:readSetting("language") or "en"
+    end
+    return LAYOUT_BY_LANGUAGE[lang:sub(1, 2)] or "qwerty"
+end
 
 -- Special keys (⌫/↵) are rendered wider than a letter key.
 local SPECIAL_UNITS = 1.4
@@ -42,15 +71,20 @@ end
 
 -- opts:
 --   width      (required) total keyboard width in px
---   layout     "azerty" to use the AZERTY rows, anything else -> QWERTY
+--   layout     "qwerty", "azerty" or "qwertz"; default: from KOReader's
+--              language (layoutForLanguage)
 --   backspace  true to append ⌫ at the end of the top row
 --   enter      true to append ↵ at the end of the home row (next to L/M)
 --   onKey      function(key_string) -- called on any key tap, incl. ⌫/↵
 --   keyColor   optional function(key_string) -> Blitbuffer color or nil;
 --              only consulted for plain letter keys (not ⌫/↵)
+--   key_height optional key height in px (default: the Button's natural
+--              height, ~6 mm -- short of a finger; screens pass
+--              Screen:scaleBySize(52), close to KOReader's own keyboard)
 function KeyboardWidget.build(opts)
     local width     = opts.width
-    local base_rows = (opts.layout == "azerty") and ROWS_AZERTY or ROWS_QWERTY
+    local base_rows = ROWS_BY_LAYOUT[opts.layout or KeyboardWidget.layoutForLanguage()]
+                      or ROWS_QWERTY
     local onKey     = opts.onKey
     local keyColor  = opts.keyColor
 
@@ -92,6 +126,7 @@ function KeyboardWidget.build(opts)
             table.insert(items, Button:new{
                 text       = k,
                 width      = special and special_w or key_w,
+                height     = opts.key_height,
                 bordersize = Size.border.button,
                 radius     = Size.radius.button,
                 margin     = 0,

@@ -1,5 +1,51 @@
 # Changelog
 
+## [1.6.0] - 2026-10-30
+
+### Added
+- Shared controls on `ScreenBase`, so every game's bottom controls look and
+  size the same: `getGutter()`, `getControlsWidth()`, `buildActionBar()`,
+  `buildNumberPad()`, `joinStatus()` (with `STATUS_SEP`, " · ") and
+  `getBoardBudget()`, which says how much room the board has once the title bar
+  and the controls are placed. See "Screen layout" in the README.
+- `GridWidgetBase` takes `max_size`, the board side in pixels, overriding
+  `size_ratio`, so a screen can give its board all the room it has.
+- Menu labels shared across the fleet, with fr/es/de: "Language: %1",
+  "Opponent: %1", "Players: %1", "Show solution", "Hide solution". The README's
+  "Screen layout" section now describes the menu order every game follows.
+- Round-over action bar: `ScreenBase:isRoundOver()`, `getRoundOverButtons()`
+  and `refreshActionBar()`. Once a round is won or lost, the action bar shows
+  "New game" in place of the game's actions, so the next round no longer has to
+  be started from the title-bar menu. `buildActionBar` now returns a small
+  wrapper (`self.action_bar`) whose `getButtonById` still works;
+  `buildActionBar({})` is a bar that stays empty until the round is over, for
+  games whose only control is a keyboard.
+- `KeyboardWidget.build` takes `key_height`, so word games can give their
+  keys a finger-sized height instead of the Button's natural ~6 mm.
+
+### Changed
+- The status line (`self.status_text`) wraps in landscape, where the controls
+  are a narrow side panel, instead of being cut off with "…". It only breaks
+  between " · " parts (a part too long for one line wraps between its words,
+  never inside one). Portrait keeps a single line.
+- `KeyboardWidget` follows KOReader's language when no `layout` is given:
+  AZERTY in French, QWERTZ in German, QWERTY otherwise (`layoutForLanguage()`,
+  plus `ROWS_QWERTZ`). It used to follow the game's word list, which defaults
+  to English, so a French device showed QWERTY. Word games no longer pass a
+  layout.
+
+### Fixed
+- `ScreenBase:onHint` saved with no data, which `PluginBase:saveState`
+  stores as nil: every applied hint wiped the saved game. It now saves
+  `serializeState()`, like `closeScreen`, and refreshes the action bar, since
+  a hint can fill the last cell.
+- `GridWidgetBase` number and note fonts were never fitted to the cell. The
+  size search measured text with the cell width as the cut-off, so the width
+  test always passed, and took `y_bottom - y_top` as the ink height, which is
+  negative for digits -- so every size was accepted and the largest one won,
+  then scaled up again by DPI. Digits now fit their cell on every screen.
+
+
 ## [1.5.0] - 2026-09-30
 
 ### Added
