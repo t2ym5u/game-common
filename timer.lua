@@ -78,13 +78,12 @@ end
 -- Persistence
 -- ---------------------------------------------------------------------------
 
+-- Reads the clock without stopping it: games save after every move, and a
+-- serialize() that stopped the timer froze it at the first move.
 function Timer:serialize()
-    -- Always stop before serialising so elapsed is fully accumulated.
-    local was_running = self._start_at ~= nil
-    self:stop()
     return {
-        elapsed     = self._elapsed,
-        was_running = was_running,
+        elapsed     = self:getElapsed(),
+        was_running = self._start_at ~= nil,
     }
 end
 

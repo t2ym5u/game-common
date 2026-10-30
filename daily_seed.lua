@@ -5,6 +5,7 @@
 --   local seed = DailySeed.today()       -- integer, constant within a day
 --   local rng  = DailySeed.rng(seed)     -- function() → [0, 1)
 --   local n    = math.floor(rng() * 10)  -- random 0–9
+--   DailySeed.run("nurikabe", function() board:generate() end)
 
 local DailySeed = {}
 
@@ -25,6 +26,27 @@ function DailySeed.rng(seed)
         state = (A * state) % M
         return (state - 1) / (M - 1)
     end
+end
+
+-- Run fn() with math.random seeded from today and `key`, so a generator that
+-- draws from math.random builds the same puzzle on every device all day long
+-- (LuaJIT's PRNG is the same on every platform). `key` keeps two games from
+-- sharing a sequence. Some generators reseed from the clock themselves; that
+-- would throw the daily seed away, so math.randomseed is a no-op meanwhile.
+-- Afterwards the clock seeds math.random again, so the next "New game" is not
+-- today's puzzle a second time.
+function DailySeed.run(key, fn)
+    local h = 0
+    for i = 1, #key do
+        h = (h * 31 + key:byte(i)) % 1000003
+    end
+    local randomseed = math.randomseed
+    randomseed(DailySeed.today() * 1000003 + h)
+    math.randomseed = function() end
+    local ok, err = pcall(fn)
+    math.randomseed = randomseed
+    randomseed(os.time())
+    if not ok then error(err, 0) end
 end
 
 return DailySeed

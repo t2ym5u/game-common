@@ -18,7 +18,7 @@ Shared library for all game plugins in this repository.
 | `settings_dialog.lua` | Multi-section settings dialog (picker, toggle, action, info rows) |
 | `i18n.lua` | Drop-in replacement for `gettext` — 350+ FR translations, falls back to KOReader gettext. Add `de`, `es`, … entries to extend. |
 | `stats_exporter.lua` | Cross-plugin play tracker — records sessions, last_played, time_played per plugin. Read by Dashboard. |
-| `daily_seed.lua` | Deterministic daily seed for puzzle-of-the-day modes. `DailySeed.today()` + `DailySeed.rng(seed)`. |
+| `daily_seed.lua` | Deterministic daily seed for puzzle-of-the-day modes. `DailySeed.today()` + `DailySeed.rng(seed)`; `DailySeed.run(key, fn)` runs a `math.random`-based generator under today's seed. |
 
 ## How to use in a plugin
 
@@ -88,7 +88,10 @@ Every game lays out the same way, so the fleet looks like one app:
 - status parts are joined with `joinStatus` (" · "): size · difficulty ·
   progress, e.g. "6×6 · Medium · Empty: 13". Gesture help belongs in the rules,
   not the status line.
-- the title-bar menu reads the same in every game: "New game" first; then the
+- the title-bar menu reads the same in every game: "New game" first (followed,
+  in a puzzle whose `onNewGame()` draws from `math.random`, by
+  `makeDailyButtonConfig()`: "Daily Challenge", the same grid for everyone
+  today at a given size and difficulty); then the
   settings as "Label: value" with the current value ("Size: 8×8",
   "Difficulty: Medium", "Language: EN", "Opponent: …", "Players: …"); then
   "Show solution" / "Hide solution"; then the game's own actions; "Rules"

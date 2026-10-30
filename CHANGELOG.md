@@ -1,5 +1,22 @@
 # Changelog
 
+## [1.7.0] - 2026-10-30
+
+### Added
+- Daily Challenge for every puzzle: `DailySeed.run(key, fn)` runs a generator
+  under a seed made of today's date and the game's id, so every device builds
+  the same grid all day (LuaJIT's PRNG is the same everywhere).
+  `math.randomseed` is a no-op meanwhile, since some generators reseed from the
+  clock, and the clock reseeds it afterwards. `ScreenBase:onDailyGame()` and
+  `makeDailyButtonConfig()` put it in the title-bar menu, right after
+  "New game". New shared label "Daily Challenge" (fr/es/de).
+
+### Fixed
+- `Timer:serialize()` stopped the clock. Games save after every move, so in
+  every game that did not restart it the clock froze at the first move and the
+  "Solved! Time" showed only the time to that move. It now reads the clock and
+  leaves it running.
+
 ## [1.6.0] - 2026-10-30
 
 ### Added

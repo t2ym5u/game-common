@@ -18,6 +18,7 @@ local VerticalGroup   = require("ui/widget/verticalgroup")
 local VerticalSpan    = require("ui/widget/verticalspan")
 local Widget          = require("ui/widget/widget")
 local WidgetContainer = require("ui/widget/container/widgetcontainer")
+local DailySeed       = require("daily_seed")
 local _               = require("i18n")
 local T               = require("ffi/util").template
 
@@ -566,6 +567,27 @@ function ScreenBase:showRules(text)
         width  = math.floor(DeviceScreen:getWidth() * 0.9),
         height = math.floor(DeviceScreen:getHeight() * 0.9),
     })
+end
+
+-- Today's puzzle: onNewGame() run under the daily seed, so everyone playing
+-- the same size and difficulty gets the same grid today. Only for games whose
+-- onNewGame() builds the puzzle from math.random; it goes right after
+-- "New game" in the title-bar menu.
+function ScreenBase:onDailyGame()
+    -- getPluginId(), not plugin.name: KOReader prefixes the name with
+    -- "reader"/"filemanager", which would give two daily grids.
+    local plugin = self.plugin
+    local key = plugin and (plugin.getPluginId and plugin:getPluginId() or plugin.name) or ""
+    DailySeed.run(key, function()
+        self:onNewGame()
+    end)
+end
+
+function ScreenBase:makeDailyButtonConfig()
+    return {
+        text     = _("Daily Challenge"),
+        callback = function() self:onDailyGame() end,
+    }
 end
 
 function ScreenBase:makeRulesButtonConfig(en_text, fr_text)
