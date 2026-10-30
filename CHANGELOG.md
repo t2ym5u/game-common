@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.8.0] - 2026-10-30
+
+### Added
+- `getRoundOverButtons()` may return a list of rows instead of one row, so a
+  game can stack "Next round" over "New game" when the narrow landscape side
+  panel can't fit them side by side. A single row works as before.
+
 ## [1.7.0] - 2026-10-30
 
 ### Added
