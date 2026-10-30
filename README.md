@@ -72,6 +72,38 @@ GridWidgetBase (grid_widget_base.lua)
   grid_utils     (grid_utils.lua)
 ```
 
+## Screen layout
+
+Every game lays out the same way, so the fleet looks like one app:
+
+- title bar on top (`buildTitleBar`) -- its menu holds New game, size,
+  difficulty, rules: anything not played every turn;
+- the board, sized from `getBoardBudget(title_bar, controls)` (pass the result
+  to `GridWidgetBase` as `max_size`);
+- the controls under the board in portrait, beside it in landscape, all at
+  `getControlsWidth()`: the status line, then an optional pad
+  (`buildNumberPad`, for digits, values or colours), then the action bar
+  (`buildActionBar`). Both are flat full-width ButtonTables -- don't use
+  `shrink_unneeded_width`, it centres a cramped cluster of labels.
+- status parts are joined with `joinStatus` (" · "): size · difficulty ·
+  progress, e.g. "6×6 · Medium · Empty: 13". Gesture help belongs in the rules,
+  not the status line.
+- the title-bar menu reads the same in every game: "New game" first; then the
+  settings as "Label: value" with the current value ("Size: 8×8",
+  "Difficulty: Medium", "Language: EN", "Opponent: …", "Players: …"); then
+  "Show solution" / "Hide solution"; then the game's own actions; "Rules"
+  last. The labels have fr/es/de entries in `i18n.lua`.
+- once a round is over (won, lost, solved), the action bar offers the next one:
+  the screen overrides `isRoundOver()` (read it from the board, not from a flag,
+  so a rebuild or a restored game shows the right bar) and calls
+  `refreshActionBar()` after anything that can end or restart a round. The bar
+  built last by `buildActionBar` then swaps its buttons for
+  `getRoundOverButtons()` -- one full-width "New game" calling `onNewGame()` by
+  default -- at the same height, so the board doesn't move.
+
+`_skeleton.koplugin/screen.lua` and `cave.koplugin/screen.lua` are the
+reference implementations.
+
 ## Minimal plugin skeleton
 
 See `_skeleton.koplugin/` for a ready-to-copy starting point.
