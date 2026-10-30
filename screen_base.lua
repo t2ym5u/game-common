@@ -148,14 +148,17 @@ function ActionBar:init()
     self:setRoundOverButtons(self.over_row)
 end
 
--- over_row: one row of ButtonTable button specs, or nil for the normal bar.
+-- over_row: one row of ButtonTable button specs, a list of rows (two buttons
+-- that don't fit a narrow landscape panel side by side), or nil for the
+-- normal bar.
 function ActionBar:setRoundOverButtons(over_row)
     self.round_over = over_row ~= nil
     if not over_row then
         self[1] = self.normal
         return
     end
-    local bt = ButtonTable:new{ width = self.width, buttons = { over_row } }
+    local over_rows = over_row[1] and over_row[1].text and { over_row } or over_row
+    local bt = ButtonTable:new{ width = self.width, buttons = over_rows }
     self[1] = CenterContainer:new{
         dimen = Geom:new{ w = self.width, h = math.max(self.normal_h, bt:getSize().h) },
         bt,
@@ -374,7 +377,7 @@ end
 -- calls refreshActionBar() after anything that can end or restart a round; the
 -- bar then offers the next round in place of the game's actions. A game whose
 -- next round isn't onNewGame (a next word, a next level) overrides
--- getRoundOverButtons().
+-- getRoundOverButtons(), which returns one row of buttons or a list of rows.
 function ScreenBase:isRoundOver()
     return false
 end
