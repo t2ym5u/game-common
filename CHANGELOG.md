@@ -1,5 +1,11 @@
 # Changelog
 
+## [1.9.1] - 2026-11-02
+
+### Fixed
+- Chess Puzzles, Klotski, Mahjong and Peg Solitaire, released alongside 1.9.0,
+  were missing from `game_categories.lua` and showed under "Other".
+
 ## [1.9.0] - 2026-11-02
 
 ### Changed
