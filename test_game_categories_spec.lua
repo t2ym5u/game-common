@@ -1,0 +1,28 @@
+-- Spec for game_categories.lua (generated from categories.json): check it is
+-- well-formed. Self-contained, like the other specs of this directory.
+local DIR = debug.getinfo(1, "S").source:sub(2):match("(.*[/\\])") or "./"
+package.path = DIR .. "?.lua;" .. package.path
+
+describe("game_categories", function()
+    local C
+    setup(function() C = require("game_categories") end)
+
+    it("labels every category it orders", function()
+        for _, c in ipairs(C.ORDER) do assert.is_string(C.LABELS[c], c) end
+    end)
+
+    it("maps every id to a known category", function()
+        for id, c in pairs(C.BY_ID) do assert.is_string(C.LABELS[c], id) end
+    end)
+
+    it("puts unknown games under Other, which sorts last", function()
+        assert.are.equal("other", C.of("not-a-game"))
+        for _, c in ipairs(C.ORDER) do
+            assert.is_true(C.rank(c) <= C.rank("other"))
+        end
+    end)
+
+    it("keeps 2048 as a string key", function()
+        assert.are.equal("classic", C.of("2048"))
+    end)
+end)

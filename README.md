@@ -7,6 +7,8 @@ Shared library for all game plugins in this repository.
 | File | Purpose |
 |---|---|
 | `plugin_base.lua` | Base plugin class — settings, menu registration, screen lifecycle |
+| `games_menu.lua` | The one **Tools → Games** entry every game joins (`GamesMenu.add`): recently played, then a submenu per category |
+| `game_categories.lua` | Plugin id → category, **generated** from `.github/scripts/categories.json` by `update_manifest.py` — edit the JSON, not this file |
 | `screen_base.lua` | Base full-screen widget — layout, status bar, close, portrait/landscape |
 | `hint.lua` | Hint button machinery — `Hint.install(BoardClass, spec)` gives a board `findHint`/`applyHint`; `ScreenBase:onHint` drives the two-tap reveal |
 | `grid_widget_base.lua` | Base grid board widget — sizing, fonts, tap + long-press, refresh |
