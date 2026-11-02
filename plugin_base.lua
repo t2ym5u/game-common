@@ -4,14 +4,17 @@ local UIManager       = require("ui/uimanager")
 local WidgetContainer = require("ui/widget/container/widgetcontainer")
 local _               = require("i18n")
 local StatsExporter   = require("stats_exporter")
+local GamesMenu       = require("games_menu")
 
 -- ---------------------------------------------------------------------------
 -- PluginBase — shared plugin lifecycle for all game plugins
 --
 -- Subclasses must set:
 --   name        (string)  — unique plugin id, used as settings file name
---   menu_text   (string)  — label shown in KOReader's Tools menu
---   menu_hint   (string)  — sorting_hint for the menu category
+--   menu_text   (string)  — label shown in Tools → Games
+--   menu_hint   (string)  — unused since 1.9.0 (every game is listed under
+--                           Tools → Games, see games_menu.lua); kept so the
+--                           subclasses that still set it need no change
 --
 -- `name` must match the plugin's directory basename: since KOReader 2026.03
 -- (PR #15096) PluginLoader overwrites plugin_module.name with the directory
@@ -90,7 +93,8 @@ end
 -- gesture action would put one entry per installed plugin into KOReader's
 -- action picker -- around 60 of them on a full install -- which buries the
 -- actions a reader actually reaches for. Games are launched from the Tools
--- menu instead.
+-- menu instead — all of them from its one "Games" entry (games_menu.lua),
+-- grouped by category, rather than one Tools entry each.
 
 function PluginBase:init()
     self:ensureSettings()
@@ -98,11 +102,11 @@ function PluginBase:init()
 end
 
 function PluginBase:addToMainMenu(menu_items)
-    menu_items[self:getPluginId()] = {
-        text         = self.menu_text,
-        sorting_hint = self.menu_hint,
-        callback     = function() self:showGame() end,
-    }
+    GamesMenu.add(menu_items, {
+        id     = self:getPluginId(),
+        label  = self.menu_text,
+        launch = function() self:showGame() end,
+    })
 end
 
 -- ---------------------------------------------------------------------------

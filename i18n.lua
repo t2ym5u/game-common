@@ -179,6 +179,20 @@ local S = {
     ["Clear the cell before adding notes."] = { fr = "Effacez la case avant d'ajouter des notes.", es = "Borre la casilla antes de añadir notas.", de = "Zelle leeren, bevor Notizen hinzugefügt werden." },
 
     -- -----------------------------------------------------------------------
+    -- Tools → Games (games_menu.lua) and the categories of game_categories.lua
+    -- -----------------------------------------------------------------------
+    ["Games"]             = { fr = "Jeux", es = "Juegos", de = "Spiele" },
+    ["Recently played"]   = { fr = "Joués récemment", es = "Jugados recientemente", de = "Zuletzt gespielt" },
+    ["Logic puzzles"]     = { fr = "Casse-têtes logiques", es = "Rompecabezas lógicos", de = "Logikrätsel" },
+    ["Word games"]        = { fr = "Jeux de mots", es = "Juegos de palabras", de = "Wortspiele" },
+    ["Board games"]       = { fr = "Jeux de plateau", es = "Juegos de mesa", de = "Brettspiele" },
+    ["Card & dice games"] = { fr = "Cartes et dés", es = "Cartas y dados", de = "Karten- und Würfelspiele" },
+    ["Classic puzzles"]   = { fr = "Casse-têtes classiques", es = "Rompecabezas clásicos", de = "Klassische Rätsel" },
+    ["Party & quiz"]      = { fr = "Jeux de groupe", es = "Juegos de grupo", de = "Gruppenspiele" },
+    ["Utilities"]         = { fr = "Utilitaires", es = "Utilidades", de = "Werkzeuge" },
+    ["Other"]             = { fr = "Autres", es = "Otros", de = "Andere" },
+
+    -- -----------------------------------------------------------------------
     -- Note mode status
     -- -----------------------------------------------------------------------
     ["Note mode enabled."]   = { fr = "Mode notes activé.", es = "Modo de notas activado.", de = "Notizmodus aktiviert." },
