@@ -563,13 +563,30 @@ end
 -- Rules dialog (for use in ButtonTable rows)
 -- ---------------------------------------------------------------------------
 
-function ScreenBase:showRules(text)
-    UIManager:show(TextViewer:new{
-        title  = _("Rules"),
+-- opts (optional): title (default "Rules"), and switch = { text, callback }
+-- for one extra button above the default ones; the viewer closes before
+-- switch.callback runs.
+function ScreenBase:showRules(text, opts)
+    opts = opts or {}
+    local viewer
+    local buttons_table
+    if opts.switch then
+        buttons_table = { {
+            { text = opts.switch.text, callback = function()
+                UIManager:close(viewer)
+                opts.switch.callback()
+            end },
+        } }
+    end
+    viewer = TextViewer:new{
+        title  = opts.title or _("Rules"),
         text   = text,
         width  = math.floor(DeviceScreen:getWidth() * 0.9),
         height = math.floor(DeviceScreen:getHeight() * 0.9),
-    })
+        buttons_table       = buttons_table,
+        add_default_buttons = buttons_table and true or nil,
+    }
+    UIManager:show(viewer)
 end
 
 -- Today's puzzle: onNewGame() run under the daily seed, so everyone playing
@@ -590,6 +607,31 @@ function ScreenBase:makeDailyButtonConfig()
     return {
         text     = _("Daily Challenge"),
         callback = function() self:onDailyGame() end,
+    }
+end
+
+-- Rules of a game with a multiplayer mode (PluginBase.party_mode):
+-- rules = { solo = { en, fr }, party = { en, fr } }. Opens the rules of the
+-- mode being played (self.plugin.launch_mode), with one button to read the
+-- other mode's.
+function ScreenBase:showModeRules(rules, mode)
+    mode = mode or (self.plugin and self.plugin.launch_mode) or "solo"
+    if mode ~= "party" then mode = "solo" end
+    local pair = rules[mode]
+    local other = mode == "party" and "solo" or "party"
+    self:showRules((_.lang() == "fr" and pair[2]) or pair[1], {
+        title  = mode == "party" and T(_("%1 · multiplayer"), _("Rules")) or _("Rules"),
+        switch = rules[other] and {
+            text     = other == "party" and _("Multiplayer rules") or _("Solo rules"),
+            callback = function() self:showModeRules(rules, other) end,
+        } or nil,
+    })
+end
+
+function ScreenBase:makeModeRulesButtonConfig(rules)
+    return {
+        text     = _("Rules"),
+        callback = function() self:showModeRules(rules) end,
     }
 end
 

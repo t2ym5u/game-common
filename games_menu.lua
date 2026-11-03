@@ -44,6 +44,11 @@ end
 
 -- Adds one game to the Games entry of `menu_items`, creating the entry on
 -- first use. entry = { id = plugin id, label = menu text, launch = function }.
+-- Optional fields, for a game listed twice (its solo entry and its
+-- "· multiplayer" entry, see PluginBase.party_mode):
+--   category    -- overrides game_categories.lua's category for this entry
+--   stats_id    -- the game_stats.lua row to read (default: id)
+--   stats_field -- the timestamp in that row (default: "last_played")
 function GamesMenu.add(menu_items, entry)
     local item = menu_items.games
     if not item then
@@ -71,7 +76,7 @@ end
 function GamesMenu.sections(list)
     local buckets = {}
     for _i, g in ipairs(list) do
-        local cat = Categories.of(g.id)
+        local cat = g.category or Categories.of(g.id)
         buckets[cat] = buckets[cat] or {}
         table.insert(buckets[cat], g)
     end
@@ -95,8 +100,8 @@ end
 function GamesMenu.recent(list, stats, n)
     local played = {}
     for _i, g in ipairs(list) do
-        local rec = stats and stats[g.id]
-        local ts = type(rec) == "table" and tonumber(rec.last_played) or nil
+        local rec = stats and stats[g.stats_id or g.id]
+        local ts = type(rec) == "table" and tonumber(rec[g.stats_field or "last_played"]) or nil
         if ts and ts > 0 then played[#played + 1] = { game = g, ts = ts } end
     end
     table.sort(played, function(a, b)

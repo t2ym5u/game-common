@@ -116,3 +116,33 @@ describe("GamesMenu.subItems", function()
         assert.is_function(items[1].callback)
     end)
 end)
+
+describe("GamesMenu entries of a game with a multiplayer mode", function()
+
+    it("files an entry under its own category when it gives one", function()
+        local list = { game("anagram", "Anagram"),
+                       { id = "anagram:party", label = "Anagram · multiplayer",
+                         category = "party", launch = function() end } }
+        local cats = {}
+        for _i, sec in ipairs(GamesMenu.sections(list)) do
+            cats[sec.category] = sec.games[1].id
+        end
+        assert.are.equal("anagram:party", cats.party)
+        assert.are.equal("anagram", cats.words)
+    end)
+
+    it("sorts Recently played by each entry's own stats field", function()
+        local solo  = { id = "anagram", label = "Anagram", stats_field = "last_solo_played",
+                        launch = function() end }
+        local party = { id = "anagram:party", label = "Anagram · multiplayer",
+                        stats_id = "anagram", stats_field = "last_party_played",
+                        launch = function() end }
+        local stats = { anagram = { last_played = 30, last_solo_played = 10, last_party_played = 30 } }
+        local recent = GamesMenu.recent({ solo, party }, stats, 5)
+        assert.are.equal(party, recent[1])
+        assert.are.equal(solo, recent[2])
+        -- A row from before the modes existed only has last_played.
+        local old = GamesMenu.recent({ solo, party }, { anagram = { last_played = 5 } }, 5)
+        assert.are.equal(0, #old)
+    end)
+end)
