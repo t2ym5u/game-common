@@ -1,5 +1,19 @@
 # Changelog
 
+## [1.11.0] - 2026-11-03
+
+### Added
+- `seen_history.lua`: what the player has already been shown (words, cards,
+  questions…), remembered in the plugin's settings across sessions. Draws
+  prefer unseen content and only repeat once a pool is used up; a fully
+  seen pool starts a new cycle without forgetting other pools.
+
+### Fixed
+- `keyboard_widget.lua`: every key uses one font size, the largest at which
+  all keys fit, with thinner inner padding. On narrow keys (the landscape
+  side panel of Wordle, Hangman, Cryptogram, Word Ladder) Button used to
+  shrink only the wide letters (W, M…) or wrap them, so keys looked uneven.
+
 ## [1.10.0] - 2026-11-02
 
 ### Added

@@ -10,9 +10,11 @@
 
 local Button          = require("ui/widget/button")
 local CenterContainer = require("ui/widget/container/centercontainer")
+local Font            = require("ui/font")
 local Geom            = require("ui/geometry")
 local HorizontalGroup = require("ui/widget/horizontalgroup")
 local HorizontalSpan  = require("ui/widget/horizontalspan")
+local RenderText      = require("ui/rendertext")
 local Size            = require("ui/size")
 local VerticalGroup   = require("ui/widget/verticalgroup")
 local VerticalSpan    = require("ui/widget/verticalspan")
@@ -69,6 +71,36 @@ local function isSpecial(k)
     return k == "⌫" or k == "↵"
 end
 
+-- Button's own face and size for its label (ui/widget/button.lua).
+local KEY_FONT_FACE = "cfont"
+local KEY_FONT_SIZE = 20
+-- Thin inner padding: a key holds one glyph, so the room goes to the letter.
+local KEY_PADDING = Size.padding.tiny
+
+-- The largest font size (at most Button's default) at which every key of
+-- `rows` fits a key of `key_w` px. On narrow keys (a landscape side panel)
+-- Button would otherwise shrink only the wide letters (W, M…), or wrap them
+-- onto two lines, leaving keys of mixed sizes and heights.
+local function keyFontSize(rows, key_w, special_w)
+    local pad = 2 * (KEY_PADDING + Size.border.button)
+    for size = KEY_FONT_SIZE, 8, -1 do
+        local face = Font:getFace(KEY_FONT_FACE, size)
+        local fits = true
+        for _, row in ipairs(rows) do
+            for _, k in ipairs(row) do
+                local w = RenderText:sizeUtf8Text(0, 10000, face, k, true, true).x
+                if w > (isSpecial(k) and special_w or key_w) - pad then
+                    fits = false
+                    break
+                end
+            end
+            if not fits then break end
+        end
+        if fits then return size end
+    end
+    return 8
+end
+
 -- opts:
 --   width      (required) total keyboard width in px
 --   layout     "qwerty", "azerty" or "qwertz"; default: from KOReader's
@@ -112,6 +144,7 @@ function KeyboardWidget.build(opts)
         if not key_w or w < key_w then key_w = w end
     end
     local special_w = math.floor(key_w * SPECIAL_UNITS)
+    local font_size = keyFontSize(rows, key_w, special_w)
 
     local vgroup = VerticalGroup:new{ align = "center" }
     for i, row in ipairs(rows) do
@@ -127,10 +160,11 @@ function KeyboardWidget.build(opts)
                 text       = k,
                 width      = special and special_w or key_w,
                 height     = opts.key_height,
+                text_font_size = font_size,
                 bordersize = Size.border.button,
                 radius     = Size.radius.button,
                 margin     = 0,
-                padding    = Size.padding.button,
+                padding    = KEY_PADDING,
                 background = bg,
                 callback   = function() onKey(k) end,
             })
