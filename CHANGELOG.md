@@ -1,5 +1,30 @@
 # Changelog
 
+## [1.10.0] - 2026-11-02
+
+### Added
+- **"· multiplayer" mode** for games played by several people around one
+  reader laid on the table. A `PluginBase` subclass that sets
+  `party_mode = true` is listed twice under Tools → Games: as itself in its
+  own category, and as "<name> · multiplayer" ("· à plusieurs") under
+  Party & quiz. `createScreen()` reads `self.launch_mode` ("solo"/"party").
+  Each mode has its own "Recently played" timestamp (`last_solo_played`,
+  `last_party_played`); `last_played` is still written every session.
+- `games_menu.lua` entries may carry `category`, `stats_id` and
+  `stats_field`.
+- `party.lua`: player or team names (remembered), player count picker,
+  scores (award, rounds, ranking with shared ranks, status line,
+  save/restore), "Who found it?" dialog and scoreboard.
+- `ScreenBase:showModeRules()` / `makeModeRulesButtonConfig()`: the rules of
+  the mode being played, with one button to read the other mode's rules.
+  `showRules()` takes an optional title and extra button.
+- Shared labels for these (Mode, Solo, Multiplayer, Team %1, Team names,
+  Player names, Who found it?, Scores, …) in fr/es/de.
+
+### Removed
+- Boggle Party from `game_categories.lua`: it is now Boggle's multiplayer
+  mode ("Boggle · multiplayer").
+
 ## [1.9.1] - 2026-11-02
 
 ### Fixed

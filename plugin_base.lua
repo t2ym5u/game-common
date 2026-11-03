@@ -5,6 +5,7 @@ local WidgetContainer = require("ui/widget/container/widgetcontainer")
 local _               = require("i18n")
 local StatsExporter   = require("stats_exporter")
 local GamesMenu       = require("games_menu")
+local T               = require("ffi/util").template
 
 -- ---------------------------------------------------------------------------
 -- PluginBase — shared plugin lifecycle for all game plugins
@@ -23,6 +24,17 @@ local GamesMenu       = require("games_menu")
 -- Subclasses must implement:
 --   :createScreen()       — return a new ScreenBase subclass instance
 --
+-- Subclasses may set:
+--   party_mode  (boolean) — the game also has a mode for several players
+--                           around one reader. It is then listed twice under
+--                           Tools → Games: as itself in its own category, and
+--                           as "<menu_text> · multiplayer" under Party & quiz.
+--                           :createScreen() reads self.launch_mode ("solo" or
+--                           "party") to know which one was picked; a screen
+--                           that lets the player switch mode sets
+--                           plugin.launch_mode too, so "Recently played"
+--                           follows the mode last played.
+--
 -- Subclasses may override:
 --   :addToMainMenu(menu_items)  — for extra menu entries
 -- ---------------------------------------------------------------------------
@@ -31,6 +43,8 @@ local PluginBase = WidgetContainer:extend{
     name        = "game",
     menu_text   = _("Game"),
     menu_hint   = "tools",
+    party_mode  = false,
+    launch_mode = "solo",
     is_doc_only = false,
 }
 
@@ -101,11 +115,33 @@ function PluginBase:init()
     self.ui.menu:registerToMainMenu(self)
 end
 
+-- Timestamp field of the game_stats.lua row that each mode's menu entry
+-- sorts "Recently played" by (last_played is kept for Dashboard).
+local MODE_FIELD = { solo = "last_solo_played", party = "last_party_played" }
+
 function PluginBase:addToMainMenu(menu_items)
+    local id = self:getPluginId()
+    if not self.party_mode then
+        GamesMenu.add(menu_items, {
+            id     = id,
+            label  = self.menu_text,
+            launch = function() self:showGame() end,
+        })
+        return
+    end
     GamesMenu.add(menu_items, {
-        id     = self:getPluginId(),
-        label  = self.menu_text,
-        launch = function() self:showGame() end,
+        id          = id,
+        label       = self.menu_text,
+        stats_field = MODE_FIELD.solo,
+        launch      = function() self:showGame("solo") end,
+    })
+    GamesMenu.add(menu_items, {
+        id          = id .. ":party",
+        label       = T(_("%1 · multiplayer"), self.menu_text),
+        category    = "party",
+        stats_id    = id,
+        stats_field = MODE_FIELD.party,
+        launch      = function() self:showGame("party") end,
     })
 end
 
@@ -134,8 +170,10 @@ end
 -- Screen lifecycle
 -- ---------------------------------------------------------------------------
 
-function PluginBase:showGame()
+-- mode: "solo" or "party", only meaningful when self.party_mode is set.
+function PluginBase:showGame(mode)
     if self.screen then return end
+    if mode then self.launch_mode = mode end
     self._session_start = os.time()
     self.screen = self:createScreen()
     UIManager:show(self.screen)
@@ -146,11 +184,15 @@ function PluginBase:onScreenClosed()
     self._session_start = nil
     local id  = self:getPluginId()
     local cur = StatsExporter:get(id) or {}
-    StatsExporter:record(id, {
+    local rec = {
         sessions    = (cur.sessions or 0) + 1,
         last_played = os.time(),
         time_played = (cur.time_played or 0) + elapsed,
-    })
+    }
+    if self.party_mode then
+        rec[MODE_FIELD[self.launch_mode] or MODE_FIELD.solo] = rec.last_played
+    end
+    StatsExporter:record(id, rec)
     self.screen = nil
 end
 
