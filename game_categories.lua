@@ -73,11 +73,14 @@ Categories.BY_ID = {
     trafficjam = "classic",
     categories = "party", codewords = "party", doubleornothing = "party",
     estimation = "party", partyquestions = "party", passeword = "party",
-    pictionary = "party", quiz = "party", taboo = "party",
-    threerounds = "party", undercover = "party", werewolf = "party",
-    whoami = "party", wordpyramid = "party",
-    bookdrop = "tools", dashboard = "tools", opdsdir = "tools",
-    pluginmanager = "tools", startmenu = "tools",
+    pictionary = "party", quiz = "party", randomizer = "party",
+    scoresheet = "party", taboo = "party", threerounds = "party",
+    undercover = "party", werewolf = "party", whoami = "party",
+    wordpyramid = "party",
+    almanac = "tools", bookdrop = "tools", converter = "tools",
+    dashboard = "tools", opdsdir = "tools", pluginmanager = "tools",
+    quickcalc = "tools", reference = "tools", startmenu = "tools",
+    stopwatch = "tools",
 }
 
 function Categories.of(id)

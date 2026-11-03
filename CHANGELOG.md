@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.11.1] - 2026-11-03
+
+### Changed
+- `game_categories.lua` regenerated: Score sheets and Random draw under
+  Party & quiz; Calculator, Unit converter, Stopwatch & timer, Calendar
+  and Quick reference under Utilities.
+
 ## [1.11.0] - 2026-11-03
 
 ### Added
