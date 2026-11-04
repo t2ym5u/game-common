@@ -1,5 +1,13 @@
 # Changelog
 
+## [1.12.0] - 2026-11-04
+
+### Added
+- `gen_progress.lua`: "Generating puzzle…" progress bar around a blocking
+  generation or search, shown only once the work has run past 200 ms.
+  Promoted from the copies vendored in tracks, heyawake and mosaic (same
+  API); `run` now also takes a title and returns the work's results.
+
 ## [1.11.1] - 2026-11-03
 
 ### Changed

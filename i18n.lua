@@ -42,6 +42,7 @@ local S = {
     ["Check"]       = { fr = "Vérifier", es = "Comprobar", de = "Prüfen" },
     ["Hint"]        = { fr = "Astuce", es = "Pista", de = "Tipp" },
     ["Undo"]        = { fr = "Annuler", es = "Deshacer", de = "Rückgängig" },
+    ["Generating puzzle…"] = { fr = "Génération de la grille…", es = "Generando el puzle…", de = "Rätsel wird erzeugt…" },
     ["Erase"]       = { fr = "Effacer", es = "Borrar", de = "Löschen" },
     ["Clear"]       = { fr = "Effacer tout", es = "Borrar todo", de = "Alles löschen" },
 
