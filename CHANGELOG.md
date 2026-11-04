@@ -1,5 +1,19 @@
 # Changelog
 
+## [1.13.0] - 2026-11-04
+
+### Added
+- `ScreenBase.landscape_controls_ratio`: share of the screen width given to
+  the controls side panel in landscape (default 0.36, unchanged). Keyboard
+  games raise it — Wordle and Cryptogram to 0.45, Hangman and Word Ladder
+  to 0.5 — so the ten-key rows of `keyboard_widget` get wider keys; other
+  games are unaffected.
+
+### Fixed – translations
+- Removed the orphaned "Home button → Dashboard" entry: only Dashboard
+  uses that string and it ships its own (different) translation, so the
+  two disagreed in the table every plugin shares.
+
 ## [1.12.0] - 2026-11-04
 
 ### Added
