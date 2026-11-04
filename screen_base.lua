@@ -171,6 +171,12 @@ end
 
 local ScreenBase = InputContainer:extend{
     vertical_align = "center",
+    -- Share of the screen width given to the controls side panel in
+    -- landscape (see getControlsWidth). Most games keep the default, which
+    -- leaves the board most of the width. A game whose control is a letter
+    -- keyboard (Wordle, Hangman, Cryptogram, Word Ladder) raises it, or ten
+    -- keys across a narrow panel end up thinner than a fingertip.
+    landscape_controls_ratio = 0.36,
 }
 
 function ScreenBase:init()
@@ -352,7 +358,7 @@ end
 function ScreenBase:getControlsWidth()
     local sw = self.dimen.w
     if self:isLandscape() then
-        return math.floor(sw * 0.36)
+        return math.floor(sw * (self.landscape_controls_ratio or 0.36))
     end
     return sw - 2 * self:getGutter()
 end

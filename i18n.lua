@@ -268,7 +268,6 @@ local S = {
     -- -----------------------------------------------------------------------
     -- Dashboard / Binairo (orphaned or shared with other plugins)
     -- -----------------------------------------------------------------------
-    ["Home button → Dashboard"]              = { fr = "Bouton Home → Dashboard", es = "Botón Inicio → Panel", de = "Home-Taste → Übersicht" },
     ["Binairo — Settings"]                   = { fr = "Binairo — Réglages", es = "Binairo — Ajustes", de = "Binairo — Einstellungen" },
 
     -- -----------------------------------------------------------------------
