@@ -1,5 +1,23 @@
 # Changelog
 
+## [1.14.0] - 2026-11-04
+
+### Fixed
+- A game no longer crashes ("attempt to call method 'getGutter'", or
+  'getControlsWidth') when an outdated plugin is installed alongside. Lua
+  caches shared modules by name for every plugin at once, so an old plugin
+  that loaded its ancient `screen_base.lua` first handed it to every game.
+  New `module_guard.lua`, run by each plugin's main.lua around everything it
+  loads: any shared module that an older or unknown plugin left in the
+  cache is replaced by the plugin's own copy; between up-to-date plugins the
+  newest copy wins whatever the load order. `i18n` is swapped with the
+  strings other plugins added to it carried over.
+
+### Added
+- `game_common_version.lua`: this copy's version and module list, read by
+  `module_guard.lua`. Bump its `version` with every release (a spec checks
+  it against this changelog) and list new modules in it.
+
 ## [1.13.0] - 2026-11-04
 
 ### Added

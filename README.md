@@ -24,6 +24,8 @@ Shared library for all game plugins in this repository.
 | `party.lua` | A game's **· multiplayer** mode (several players around one reader): remembered player/team names, scores (plain serializable table), "Who found it?" buttons, scoreboard. Enable the mode with `party_mode = true` on the PluginBase subclass; rules per mode via `ScreenBase:makeModeRulesButtonConfig`. |
 | `gen_progress.lua` | "Generating puzzle…" progress bar around a blocking generation: `GenProgress.run(function(on_progress) board:generate(on_progress) end)`; appears only after 200 ms. |
 | `seen_history.lua` | Content already shown (words, cards, questions…), remembered across sessions: `SeenHistory.open(plugin, key):draw(pool, n)` / `:pick(pool)` prefer unseen items and only repeat once the pool is used up. |
+| `module_guard.lua` | Loaded **by path** from every plugin's main.lua (never `require`d): drops any shared module an older or unknown plugin left in Lua's per-name cache, so a game never runs on modules older than its own; `i18n` is swapped with its strings carried over. Registry: `package.loaded.game_common_registry`. Verbatim copy in sudoku-common. |
+| `game_common_version.lua` | This copy's version and module list, read by `module_guard.lua`. **Bump `version` with every release** and list every new module (a spec checks both). |
 
 ## How to use in a plugin
 
