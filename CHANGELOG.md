@@ -1,5 +1,15 @@
 # Changelog
 
+## [1.15.0] - 2026-11-09
+
+### Added
+- PluginBase:getLang(supported, fallback) / setLang(lang): a game with
+  content in several languages follows KOReader's language by default; a
+  language picked in the game holds while KOReader keeps the language it was
+  picked under, then the game follows KOReader again. A choice saved by an
+  older version (without "lang_ko") is dropped. An optional key lets a
+  multiplayer mode keep its own language ("party_lang") under the same rule.
+
 ## [1.14.0] - 2026-11-04
 
 ### Fixed

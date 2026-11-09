@@ -100,6 +100,47 @@ function PluginBase:getSetting(key, default)
 end
 
 -- ---------------------------------------------------------------------------
+-- Game language (games with content in several languages)
+--
+-- By default a game follows KOReader's interface language. A language picked
+-- in the game's own menu (setLang) holds as long as KOReader's language stays
+-- the one it was picked under ("lang_ko"); once KOReader changes language,
+-- the game follows it again. A choice saved before 1.15.0 has no "lang_ko"
+-- and is dropped: games either ignored KOReader altogether (seven word games
+-- started in English whatever its language) or kept English for good after
+-- it was tried once.
+--
+-- supported: the languages the game has content for (default fr, en); when
+-- KOReader's language is not among them, `fallback` if given, else English
+-- if supported, else the first one. key: the setting holding the choice
+-- (default "lang"; a multiplayer mode with its own language passes its own,
+-- e.g. "party_lang"); KOReader's language at that time is kept in key.."_ko".
+-- ---------------------------------------------------------------------------
+
+local function koreaderLang()
+    return (G_reader_settings and G_reader_settings:readSetting("language") or "en"):sub(1, 2)
+end
+
+function PluginBase:getLang(supported, fallback, key)
+    key = key or "lang"
+    supported = supported or { "fr", "en" }
+    local ok = {}
+    for _i, l in ipairs(supported) do ok[l] = true end
+    local ko = koreaderLang()
+    local saved = self:getSetting(key)
+    if saved and ok[saved] and self:getSetting(key .. "_ko") == ko then return saved end
+    if ok[ko] then return ko end
+    if fallback and ok[fallback] then return fallback end
+    return ok.en and "en" or supported[1]
+end
+
+function PluginBase:setLang(lang, key)
+    key = key or "lang"
+    self:saveSetting(key, lang)
+    self:saveSetting(key .. "_ko", koreaderLang())
+end
+
+-- ---------------------------------------------------------------------------
 -- Menu registration
 -- ---------------------------------------------------------------------------
 
