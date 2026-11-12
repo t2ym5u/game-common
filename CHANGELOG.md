@@ -1,5 +1,23 @@
 # Changelog
 
+## [1.16.0] - 2026-11-10
+
+### Added
+- `duo.lua`: games for two players with a reader each, readers that never
+  talk to each other. One player starts a game and reads its five-digit
+  code aloud (four digits of seed and variant, one check digit that refuses
+  any single wrong digit); the other types it in, and both readers build the
+  same game from it with `Duo.rng`, a Park-Miller generator that draws the
+  same numbers on every LuaJIT and Lua. `Duo.newGameDialog` is the shared
+  Start / Join dialog, with an optional role choice.
+- New category "Two readers" (FR « À deux liseuses »), between Party & quiz
+  and Utilities.
+- `PluginBase.duo_mode` / `duo_menu_text`: a game with a two-reader mode
+  gets a third Tools → Games entry, under Two readers, opened with
+  launch_mode "duo"; a caller that asks for no mode (Dashboard) always gets
+  the game itself, never that mode. `ScreenBase:showModeRules` takes a
+  `duo` pair of rules too, with one button per other mode.
+
 ## [1.15.0] - 2026-11-09
 
 ### Added

@@ -34,6 +34,12 @@ local T               = require("ffi/util").template
 --                           that lets the player switch mode sets
 --                           plugin.launch_mode too, so "Recently played"
 --                           follows the mode last played.
+--   duo_mode    (boolean) — the game also has a mode for two players with a
+--                           reader each (see duo.lua), listed a third time
+--                           as "<menu_text> · two readers" under Two
+--                           readers; launch_mode is then "duo".
+--   duo_menu_text (string) — the label of that entry, when the two-reader
+--                           game has a name of its own.
 --
 -- Subclasses may override:
 --   :addToMainMenu(menu_items)  — for extra menu entries
@@ -44,6 +50,7 @@ local PluginBase = WidgetContainer:extend{
     menu_text   = _("Game"),
     menu_hint   = "tools",
     party_mode  = false,
+    duo_mode    = false,
     launch_mode = "solo",
     is_doc_only = false,
 }
@@ -158,11 +165,11 @@ end
 
 -- Timestamp field of the game_stats.lua row that each mode's menu entry
 -- sorts "Recently played" by (last_played is kept for Dashboard).
-local MODE_FIELD = { solo = "last_solo_played", party = "last_party_played" }
+local MODE_FIELD = { solo = "last_solo_played", party = "last_party_played", duo = "last_duo_played" }
 
 function PluginBase:addToMainMenu(menu_items)
     local id = self:getPluginId()
-    if not self.party_mode then
+    if not self.party_mode and not self.duo_mode then
         GamesMenu.add(menu_items, {
             id     = id,
             label  = self.menu_text,
@@ -176,14 +183,26 @@ function PluginBase:addToMainMenu(menu_items)
         stats_field = MODE_FIELD.solo,
         launch      = function() self:showGame("solo") end,
     })
-    GamesMenu.add(menu_items, {
-        id          = id .. ":party",
-        label       = T(_("%1 · multiplayer"), self.menu_text),
-        category    = "party",
-        stats_id    = id,
-        stats_field = MODE_FIELD.party,
-        launch      = function() self:showGame("party") end,
-    })
+    if self.party_mode then
+        GamesMenu.add(menu_items, {
+            id          = id .. ":party",
+            label       = T(_("%1 · multiplayer"), self.menu_text),
+            category    = "party",
+            stats_id    = id,
+            stats_field = MODE_FIELD.party,
+            launch      = function() self:showGame("party") end,
+        })
+    end
+    if self.duo_mode then
+        GamesMenu.add(menu_items, {
+            id          = id .. ":duo",
+            label       = self.duo_menu_text or T(_("%1 · two readers"), self.menu_text),
+            category    = "duo",
+            stats_id    = id,
+            stats_field = MODE_FIELD.duo,
+            launch      = function() self:showGame("duo") end,
+        })
+    end
 end
 
 -- ---------------------------------------------------------------------------
@@ -214,7 +233,13 @@ end
 -- mode: "solo" or "party", only meaningful when self.party_mode is set.
 function PluginBase:showGame(mode)
     if self.screen then return end
-    if mode then self.launch_mode = mode end
+    if mode then
+        self.launch_mode = mode
+    elseif self.launch_mode == "duo" then
+        -- Callers that pass no mode (Dashboard's tiles) mean the game
+        -- itself: the two-reader mode is only ever opened by its own entry.
+        self.launch_mode = "solo"
+    end
     self._session_start = os.time()
     self.screen = self:createScreen()
     UIManager:show(self.screen)
@@ -230,7 +255,7 @@ function PluginBase:onScreenClosed()
         last_played = os.time(),
         time_played = (cur.time_played or 0) + elapsed,
     }
-    if self.party_mode then
+    if self.party_mode or self.duo_mode then
         rec[MODE_FIELD[self.launch_mode] or MODE_FIELD.solo] = rec.last_played
     end
     StatsExporter:record(id, rec)

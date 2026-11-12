@@ -570,19 +570,23 @@ end
 -- ---------------------------------------------------------------------------
 
 -- opts (optional): title (default "Rules"), and switch = { text, callback }
--- for one extra button above the default ones; the viewer closes before
--- switch.callback runs.
+-- for one extra button above the default ones, or buttons = { switch, ... }
+-- for several; the viewer closes before the button's callback runs.
 function ScreenBase:showRules(text, opts)
     opts = opts or {}
     local viewer
     local buttons_table
-    if opts.switch then
-        buttons_table = { {
-            { text = opts.switch.text, callback = function()
+    local extra = opts.buttons or (opts.switch and { opts.switch })
+    if extra then
+        local row = {}
+        for _i, b in ipairs(extra) do
+            local cb = b.callback
+            row[#row + 1] = { text = b.text, callback = function()
                 UIManager:close(viewer)
-                opts.switch.callback()
-            end },
-        } }
+                cb()
+            end }
+        end
+        buttons_table = { row }
     end
     viewer = TextViewer:new{
         title  = opts.title or _("Rules"),
@@ -616,21 +620,35 @@ function ScreenBase:makeDailyButtonConfig()
     }
 end
 
--- Rules of a game with a multiplayer mode (PluginBase.party_mode):
--- rules = { solo = { en, fr }, party = { en, fr } }. Opens the rules of the
--- mode being played (self.plugin.launch_mode), with one button to read the
--- other mode's.
+-- Rules of a game with a multiplayer mode (PluginBase.party_mode) or a
+-- two-reader mode (duo_mode): rules = { solo = { en, fr }, party = { en, fr },
+-- duo = { en, fr } }, any of party and duo left out. Opens the rules of the
+-- mode being played (self.plugin.launch_mode), with one button per other
+-- mode to read its rules.
+local MODE_TITLES = {
+    party = { title = "%1 · multiplayer", button = "Multiplayer rules" },
+    duo   = { title = "%1 · two readers", button = "Two-reader rules" },
+}
+
 function ScreenBase:showModeRules(rules, mode)
     mode = mode or (self.plugin and self.plugin.launch_mode) or "solo"
-    if mode ~= "party" then mode = "solo" end
+    if not rules[mode] then mode = "solo" end
     local pair = rules[mode]
-    local other = mode == "party" and "solo" or "party"
+    local buttons = {}
+    for _i, other in ipairs({ "solo", "party", "duo" }) do
+        if other ~= mode and rules[other] then
+            buttons[#buttons + 1] = {
+                text     = other == "solo" and _("Solo rules") or _(MODE_TITLES[other].button),
+                callback = function() self:showModeRules(rules, other) end,
+            }
+        end
+    end
     self:showRules((_.lang() == "fr" and pair[2]) or pair[1], {
-        title  = mode == "party" and T(_("%1 · multiplayer"), _("Rules")) or _("Rules"),
-        switch = rules[other] and {
-            text     = other == "party" and _("Multiplayer rules") or _("Solo rules"),
-            callback = function() self:showModeRules(rules, other) end,
-        } or nil,
+        title   = MODE_TITLES[mode] and T(_(MODE_TITLES[mode].title), _("Rules")) or _("Rules"),
+        buttons = #buttons > 1 and buttons or nil,
+        -- One other mode: passed as `switch`, which a game's own showRules
+        -- override may read (textadventure).
+        switch  = #buttons == 1 and buttons[1] or nil,
     })
 end
 

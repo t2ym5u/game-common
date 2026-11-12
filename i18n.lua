@@ -213,6 +213,27 @@ local S = {
     ["Party & quiz"]      = { fr = "Jeux de groupe", es = "Juegos de grupo", de = "Gruppenspiele" },
     ["Utilities"]         = { fr = "Utilitaires", es = "Utilidades", de = "Werkzeuge" },
     ["Other"]             = { fr = "Autres", es = "Otros", de = "Andere" },
+    ["Two readers"]       = { fr = "À deux liseuses", es = "Con dos lectores", de = "Mit zwei Readern" },
+    ["%1 · two readers"]  = { fr = "%1 · à deux liseuses", es = "%1 · con dos lectores", de = "%1 · mit zwei Readern" },
+    ["Two-reader rules"]  = { fr = "Règles à deux liseuses", es = "Reglas con dos lectores", de = "Regeln mit zwei Readern" },
+
+    -- -----------------------------------------------------------------------
+    -- Two-reader games (duo.lua)
+    -- -----------------------------------------------------------------------
+    ["Game code: %1"]     = { fr = "Code de la partie : %1", es = "Código de la partida: %1", de = "Spielcode: %1" },
+    ["Read it to the other player, who chooses Join a game."] = { fr = "Lisez-le à l'autre joueur, qui choisit Rejoindre une partie.", es = "Léaselo al otro jugador, que elige Unirse a una partida.", de = "Lies ihn dem anderen Spieler vor, der „Einem Spiel beitreten“ wählt." },
+    ["Start playing"]     = { fr = "Commencer", es = "Empezar", de = "Starten" },
+    ["Choose your role (the other player takes the other one):"] = { fr = "Choisissez votre rôle (l'autre joueur prend l'autre) :", es = "Elija su papel (el otro jugador toma el otro):", de = "Wähle deine Rolle (der andere Spieler nimmt die andere):" },
+    ["Join a game"]       = { fr = "Rejoindre une partie", es = "Unirse a una partida", de = "Einem Spiel beitreten" },
+    ["Type the code shown on the other player's reader."] = { fr = "Saisissez le code affiché sur la liseuse de l'autre joueur.", es = "Escriba el código que muestra el lector del otro jugador.", de = "Gib den Code ein, der auf dem Reader des anderen Spielers steht." },
+    ["Join"]              = { fr = "Rejoindre", es = "Unirse", de = "Beitreten" },
+    ["This code is not valid. Check it with the other player."] = { fr = "Ce code n'est pas valide. Vérifiez-le avec l'autre joueur.", es = "Este código no es válido. Compruébelo con el otro jugador.", de = "Dieser Code ist ungültig. Prüfe ihn mit dem anderen Spieler." },
+    ["Start a game (show the code)"] = { fr = "Lancer une partie (afficher le code)", es = "Empezar una partida (mostrar el código)", de = "Spiel starten (Code anzeigen)" },
+    ["Join a game (type the code)"]  = { fr = "Rejoindre une partie (saisir le code)", es = "Unirse a una partida (escribir el código)", de = "Einem Spiel beitreten (Code eingeben)" },
+    ["Show the game code"] = { fr = "Afficher le code de la partie", es = "Mostrar el código de la partida", de = "Spielcode anzeigen" },
+    ["Start or join a game."] = { fr = "Lancez ou rejoignez une partie.", es = "Empiece o únase a una partida.", de = "Starte ein Spiel oder tritt einem bei." },
+    ["Each player needs a reader with this game. One starts a game and reads the code aloud; the other joins with that code."] = { fr = "Chaque joueur a besoin d'une liseuse avec ce jeu. L'un lance une partie et lit le code à voix haute ; l'autre la rejoint avec ce code.", es = "Cada jugador necesita un lector con este juego. Uno empieza una partida y lee el código en voz alta; el otro se une con ese código.", de = "Jeder Spieler braucht einen Reader mit diesem Spiel. Einer startet ein Spiel und liest den Code vor; der andere tritt mit diesem Code bei." },
+    ["Difficulty of the games you start"] = { fr = "Difficulté des parties que vous lancez", es = "Dificultad de las partidas que empieza", de = "Schwierigkeit der Spiele, die du startest" },
 
     -- -----------------------------------------------------------------------
     -- Note mode status

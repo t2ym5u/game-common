@@ -20,6 +20,7 @@ Categories.ORDER = {
     "cards",
     "classic",
     "party",
+    "duo",
     "tools",
     "other",
 }
@@ -33,6 +34,7 @@ Categories.LABELS = {
     cards   = "Card & dice games",
     classic = "Classic puzzles",
     party   = "Party & quiz",
+    duo     = "Two readers",
     tools   = "Utilities",
     other   = "Other",
 }
@@ -77,6 +79,8 @@ Categories.BY_ID = {
     scoresheet = "party", taboo = "party", threerounds = "party",
     undercover = "party", werewolf = "party", whoami = "party",
     wordpyramid = "party",
+    defuser = "duo", mazeguide = "duo", mysteryface = "duo",
+    navalduel = "duo", spotdiff = "duo", stealthsubs = "duo",
     almanac = "tools", bookdrop = "tools", converter = "tools",
     dashboard = "tools", opdsdir = "tools", pluginmanager = "tools",
     quickcalc = "tools", reference = "tools", startmenu = "tools",

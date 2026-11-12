@@ -21,6 +21,7 @@ Shared library for all game plugins in this repository.
 | `i18n.lua` | Drop-in replacement for `gettext` — 350+ FR translations, falls back to KOReader gettext. Add `de`, `es`, … entries to extend. |
 | `stats_exporter.lua` | Cross-plugin play tracker — records sessions, last_played, time_played per plugin. Read by Dashboard. |
 | `daily_seed.lua` | Deterministic daily seed for puzzle-of-the-day modes. `DailySeed.today()` + `DailySeed.rng(seed)`; `DailySeed.run(key, fn)` runs a `math.random`-based generator under today's seed. |
+| `duo.lua` | Games for two players with a reader each: `Duo.newCode` / `Duo.decode` (five digits: seed, variant, check digit), `Duo.rng(seed, salt)` (the same draws on every reader), `Duo.newGameDialog{ … }` (Start / Join, optional roles). |
 | `party.lua` | A game's **· multiplayer** mode (several players around one reader): remembered player/team names, scores (plain serializable table), "Who found it?" buttons, scoreboard. Enable the mode with `party_mode = true` on the PluginBase subclass; rules per mode via `ScreenBase:makeModeRulesButtonConfig`. |
 | `gen_progress.lua` | "Generating puzzle…" progress bar around a blocking generation: `GenProgress.run(function(on_progress) board:generate(on_progress) end)`; appears only after 200 ms. |
 | `seen_history.lua` | Content already shown (words, cards, questions…), remembered across sessions: `SeenHistory.open(plugin, key):draw(pool, n)` / `:pick(pool)` prefer unseen items and only repeat once the pool is used up. |
