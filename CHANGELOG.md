@@ -1,5 +1,16 @@
 # Changelog
 
+## [1.17.0] - 2026-11-18
+
+### Fixed
+- `GridWidgetBase:refresh(parent)` takes the screen holding the board.
+  UIManager only repaints top-level widgets, so a board that marked itself
+  dirty refreshed its old pixels: a change showed only when something else
+  repainted the screen (Flip in chess, Undo in binairo). With the screen,
+  the screen is repainted and only the board's rectangle refreshed; without
+  it, the board is marked as before.
+- Hints repaint the board through the screen.
+
 ## [1.16.0] - 2026-11-10
 
 ### Added

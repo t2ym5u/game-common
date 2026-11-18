@@ -214,14 +214,18 @@ end
 -- Refresh
 -- ---------------------------------------------------------------------------
 
-function GridWidgetBase:refresh()
+-- `parent` is the screen holding the board. UIManager only repaints
+-- top-level widgets: marking the board itself dirty refreshes the old pixels,
+-- so a change shows only if something else repaints the screen. With the
+-- screen, it is repainted and only the board's rectangle is refreshed.
+function GridWidgetBase:refresh(parent)
     local geom = self._dirty_geom
     if not geom then
         local rect = self.paint_rect
         geom = Geom:new{ x = rect.x, y = rect.y, w = rect.w, h = rect.h }
         self._dirty_geom = geom
     end
-    UIManager:setDirty(self, function()
+    UIManager:setDirty(parent or self, function()
         return "ui", geom
     end)
 end

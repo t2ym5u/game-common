@@ -531,7 +531,7 @@ function ScreenBase:onHint()
     if board.setSelection then board:setSelection(step.r, step.c) end
 
     if level == 1 then
-        if self.board_widget then self.board_widget:refresh() end
+        if self.board_widget then self.board_widget:refresh(self) end
         -- Puzzles whose unit is not a cell -- an edge, a bridge, a rectangle,
         -- a loop segment -- override describeHintStep, since "R3C4" would say
         -- the wrong thing there. Wording lives in the screen, not the board:
@@ -548,7 +548,7 @@ function ScreenBase:onHint()
     end
     board:noteHintUsed()
     self.hint_cell = nil
-    if self.board_widget then self.board_widget:refresh() end
+    if self.board_widget then self.board_widget:refresh(self) end
     -- Pass the game's state like closeScreen does: PluginBase:saveState(nil)
     -- would store nil and wipe the save after every hint.
     if self.plugin and self.plugin.saveState then
