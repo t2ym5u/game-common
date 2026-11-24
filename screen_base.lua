@@ -41,6 +41,7 @@ local DeviceScreen = Device.screen
 --   :isLandscape()
 --   :showMessage(msg, timeout)
 --   :closeScreen()
+--   :schedule(delay, fn) / :cancelScheduled()  -- deferred actions, see below
 -- ---------------------------------------------------------------------------
 
 -- ---------------------------------------------------------------------------
@@ -255,12 +256,60 @@ function ScreenBase:showMessage(msg, timeout)
 end
 
 function ScreenBase:closeScreen()
+    self:cancelScheduled()
     if self.plugin then
         self.plugin:saveState(self.serializeState and self:serializeState() or nil)
         self.plugin:onScreenClosed()
+        if self.plugin.flushSettings then self.plugin:flushSettings() end
     end
     UIManager:close(self)
     UIManager:setDirty(nil, "full")
+end
+
+-- ---------------------------------------------------------------------------
+-- Deferred actions
+--
+-- UIManager:scheduleIn runs its callback whatever happened in between. A game
+-- that defers the AI's move or a card flip-back then plays on a closed screen,
+-- or on the game "New game" has just replaced (Othello's AI could move twice).
+-- :schedule runs fn only while this screen is still shown and :cancelScheduled
+-- has not been called since. Call :cancelScheduled when a new game or round
+-- replaces the current one; :closeScreen calls it. Returns the scheduled
+-- function, which UIManager:unschedule also accepts.
+-- ---------------------------------------------------------------------------
+
+function ScreenBase:schedule(delay, fn)
+    local epoch   = self._sched_epoch or 0
+    -- Weak keys: an action unscheduled straight through UIManager:unschedule
+    -- is then referenced by nothing and drops out of the table by itself.
+    local pending = self._sched_pending or setmetatable({}, { __mode = "k" })
+    self._sched_pending = pending
+    local action
+    action = function()
+        pending[action] = nil
+        if (self._sched_epoch or 0) ~= epoch then return end
+        if UIManager.isWidgetShown and not UIManager:isWidgetShown(self) then return end
+        fn()
+    end
+    pending[action] = true
+    UIManager:scheduleIn(delay, action)
+    return action
+end
+
+function ScreenBase:cancelScheduled()
+    self._sched_epoch = (self._sched_epoch or 0) + 1
+    local pending = self._sched_pending
+    self._sched_pending = setmetatable({}, { __mode = "k" })
+    if pending then
+        for action in pairs(pending) do UIManager:unschedule(action) end
+    end
+end
+
+-- The screen is a window of its own: KOReader sends it FlushSettings before
+-- suspend and power-off, and when closing it. Write the game's pending save.
+-- Returns nothing, so the event goes on.
+function ScreenBase:onFlushSettings()
+    if self.plugin and self.plugin.flushSettings then self.plugin:flushSettings() end
 end
 
 -- ---------------------------------------------------------------------------

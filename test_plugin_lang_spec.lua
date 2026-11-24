@@ -9,7 +9,7 @@ local function stub(name, value)
 end
 stub("datastorage", { getSettingsDir = function() return "/tmp" end })
 stub("luasettings", { open = function() return {} end })
-stub("ui/uimanager", {})
+stub("ui/uimanager", { scheduleIn = function() end, unschedule = function() end })
 stub("ui/widget/container/widgetcontainer", {
     extend = function(self, o) o = o or {}; o.__index = o; return setmetatable(o, { __index = self }) end,
 })

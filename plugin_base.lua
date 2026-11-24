@@ -82,10 +82,56 @@ function PluginBase:ensureSettings()
     end
 end
 
+-- ---------------------------------------------------------------------------
+-- Writing the settings file
+--
+-- saveState / saveSetting change the settings in memory at once, and write
+-- the file a few seconds later, once for any number of changes. A write is
+-- a full dump of the file (seen history included), a backup and an fsync:
+-- measured 2026-11-24 on the emulator, 0.5 ms for a 9x9 grid with notes up
+-- to 7 ms with a 3 000-item seen history, i.e. ~13-170 ms of CPU a move on a
+-- Kobo, before the flash write itself. Games saved after every move.
+--
+-- The file is still written whenever it matters: when the game closes
+-- (closeScreen), and on KOReader's FlushSettings event, which it sends
+-- before suspend, power-off, USB mass storage, exit, and to a widget it
+-- closes. A crash loses at most FLUSH_DELAY seconds of play.
+-- ---------------------------------------------------------------------------
+
+PluginBase.FLUSH_DELAY = 3
+
+function PluginBase:_requestFlush()
+    self._flush_dirty = true
+    if self._flush_pending then return end
+    self._flush_pending = function()
+        self._flush_pending = nil
+        self:flushSettings()
+    end
+    UIManager:scheduleIn(self.FLUSH_DELAY, self._flush_pending)
+end
+
+-- Write now whatever is waiting. Safe to call at any time.
+function PluginBase:flushSettings()
+    if self._flush_pending then
+        UIManager:unschedule(self._flush_pending)
+        self._flush_pending = nil
+    end
+    if self._flush_dirty and self.settings then
+        self._flush_dirty = false
+        self.settings:flush()
+    end
+end
+
+-- KOReader broadcasts FlushSettings to the file manager or reader and their
+-- modules (this plugin). Returns nothing, so the event goes on to the others.
+function PluginBase:onFlushSettings()
+    self:flushSettings()
+end
+
 function PluginBase:saveState(data, key)
     self:ensureSettings()
     self.settings:saveSetting(key or "state", data)
-    self.settings:flush()
+    self:_requestFlush()
 end
 
 function PluginBase:loadState(key)
@@ -96,7 +142,7 @@ end
 function PluginBase:saveSetting(key, value)
     self:ensureSettings()
     self.settings:saveSetting(key, value)
-    self.settings:flush()
+    self:_requestFlush()
 end
 
 function PluginBase:getSetting(key, default)
@@ -216,6 +262,9 @@ end
 -- ---------------------------------------------------------------------------
 
 function PluginBase:stopPlugin()
+    -- Write now: a write still pending would recreate the settings file
+    -- after PluginLoader has deleted it.
+    self:flushSettings()
     if self.screen then
         UIManager:close(self.screen)
         self.screen = nil

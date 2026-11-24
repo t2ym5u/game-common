@@ -1,5 +1,23 @@
 # Changelog
 
+## [1.20.0] - 2026-11-24
+
+### Added
+- `ScreenBase:schedule(delay, fn)` and `:cancelScheduled()`: a deferred
+  action (the AI's move, a card flip-back, a countdown tick) runs only while
+  the screen is still shown and no new game has cancelled it. With
+  `UIManager:scheduleIn` it ran anyway: Othello's AI could move twice after
+  "New game", and a missed pair in Memory flipped back cards of the next
+  grid. `closeScreen()` cancels everything pending.
+
+### Changed
+- `saveState` / `saveSetting` keep the change in memory and write the
+  settings file 3 seconds later, once for any number of changes, instead of
+  after every move (a full dump, a backup and an fsync each time: about
+  13-170 ms of CPU a move on a Kobo, measured on the emulator). The file is
+  written at once when the game closes, when the plugin is uninstalled, and
+  on KOReader's FlushSettings event (suspend, power-off, USB, exit).
+
 ## [1.19.1] - 2026-11-24
 
 ### Fixed
