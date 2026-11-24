@@ -1,5 +1,14 @@
 # Changelog
 
+## [1.19.1] - 2026-11-24
+
+### Fixed
+- `game_categories.lua` lists Letter Pyramid under Words. The table is
+  generated from `.github/scripts/categories.json` by update_manifest.py,
+  which rewrote it on every run since Letter Pyramid's release, and
+  build_release.sh then packed that uncommitted copy into every zip. No
+  change in any game: Letter Pyramid passes its category itself.
+
 ## [1.19.0] - 2026-11-24
 
 ### Added
