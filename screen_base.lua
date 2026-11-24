@@ -267,11 +267,29 @@ end
 -- TitleBar helpers
 -- ---------------------------------------------------------------------------
 
--- Build a standard TitleBar with a hamburger menu on the left and close on
--- the right.  options_fn is called each time the menu opens and must return
--- a list of { text, callback } items — texts are therefore always fresh.
+-- The Dashboard plugin when it is installed and active, nil otherwise.
+function ScreenBase:dashboard()
+    local ui   = self.plugin and self.plugin.ui
+    local dash = ui and ui.dashboard
+    if type(dash) == "table" and type(dash.show) == "function" then return dash end
+end
+
+-- Close the game (saving it, as closeScreen does) and open the Dashboard
+-- over what was under it. Both in the same callback, so one repaint.
+function ScreenBase:goHome()
+    local dash = self:dashboard()
+    self:closeScreen()
+    if dash then dash:show() end
+end
+
+-- Build a standard TitleBar with a hamburger menu on the left and, on the
+-- right, a house that goes back to the Dashboard when it is installed, close
+-- otherwise (the Back key always just closes).  options_fn is called each
+-- time the menu opens and must return a list of { text, callback } items —
+-- texts are therefore always fresh.
 function ScreenBase:buildTitleBar(title, options_fn)
     local self_ref = self
+    local home = self:dashboard() ~= nil
     return TitleBar:new{
         width                  = DeviceScreen:getWidth(),
         title                  = title,
@@ -289,7 +307,10 @@ function ScreenBase:buildTitleBar(title, options_fn)
             dlg = ButtonDialog:new{ title = title, buttons = buttons }
             UIManager:show(dlg)
         end,
-        close_callback = function() self_ref:closeScreen() end,
+        close_callback = not home and function() self_ref:closeScreen() end or nil,
+        right_icon     = home and "home" or nil,
+        right_icon_tap_callback = home and function() self_ref:goHome() end or nil,
+        right_icon_allow_flash  = false,
         with_bottom_line = true,
     }
 end

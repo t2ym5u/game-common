@@ -1,5 +1,14 @@
 # Changelog
 
+## [1.19.0] - 2026-11-24
+
+### Added
+- With the Dashboard installed, the title bar's close icon becomes a house:
+  it saves and closes the game, then opens the Dashboard (`goHome()`). The
+  game's session is recorded first, so the Dashboard's Resume card is
+  current. Without the Dashboard the close icon stays; the Back key always
+  just closes.
+
 ## [1.18.0] - 2026-11-24
 
 ### Added

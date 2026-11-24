@@ -85,7 +85,8 @@ GridWidgetBase (grid_widget_base.lua)
 Every game lays out the same way, so the fleet looks like one app:
 
 - title bar on top (`buildTitleBar`) -- its menu holds New game, size,
-  difficulty, rules: anything not played every turn;
+  difficulty, rules: anything not played every turn; its right icon is a
+  house back to the Dashboard when that plugin is installed, close otherwise;
 - the board, sized from `getBoardBudget(title_bar, controls)` (pass the result
   to `GridWidgetBase` as `max_size`);
 - the controls under the board in portrait, beside it in landscape, all at
