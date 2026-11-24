@@ -7,7 +7,7 @@
 -- (the spec checks the list against the directory too).
 return {
     lib     = "game-common",
-    version = "1.17.0",
+    version = "1.18.0",
     modules = {
         "daily_seed", "duo", "game_categories", "games_menu", "gen_progress",
         "grid_utils", "grid_widget_base", "hint", "i18n", "keyboard_widget",

@@ -1,5 +1,13 @@
 # Changelog
 
+## [1.18.0] - 2026-11-24
+
+### Added
+- A status line cut off with "…" (in portrait it keeps one line) opens in
+  full when tapped: hints such as "The tile at R3C4 is locked the wrong way.
+  Tap Hint again to unlock it." rarely fit a portrait line, French ones even
+  less. A tap on a line that is whole does nothing.
+
 ## [1.17.0] - 2026-11-18
 
 ### Fixed

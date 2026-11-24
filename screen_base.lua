@@ -5,6 +5,7 @@ local CenterContainer = require("ui/widget/container/centercontainer")
 local Device          = require("device")
 local Font            = require("ui/font")
 local Geom            = require("ui/geometry")
+local GestureRange    = require("ui/gesturerange")
 local InfoMessage     = require("ui/widget/infomessage")
 local InputContainer  = require("ui/widget/container/inputcontainer")
 local RenderText      = require("ui/rendertext")
@@ -49,7 +50,9 @@ local DeviceScreen = Device.screen
 -- paintTo), but in landscape it wraps over several lines: the controls there
 -- are a narrow side panel with height to spare, and a one-line TextWidget cut
 -- every turn-based game's status off with "…". Portrait keeps one line, since
--- the board is sized around a one-line footer.
+-- the board is sized around a one-line footer: there, a line cut off with "…"
+-- opens in full when tapped (a hint such as "The tile at R3C4 is locked the
+-- wrong way. Tap Hint again to unlock it." rarely fits a portrait line).
 -- ---------------------------------------------------------------------------
 
 local STATUS_SEP = " · "
@@ -68,11 +71,29 @@ local function keepPartsWhole(text, face, max_width)
     return table.concat(out, STATUS_SEP)
 end
 
-local StatusLine = Widget:extend{
+local StatusLine = InputContainer:extend{
     text      = "",
     face      = nil,
     max_width = nil,
 }
+
+function StatusLine:init()
+    self.ges_events = {
+        Tap = { GestureRange:new{ ges = "tap", range = function() return self.dimen end } },
+    }
+end
+
+function StatusLine:isTruncated()
+    local w = self:_widget()
+    return w.isTruncated ~= nil and w:isTruncated() and true or false
+end
+
+-- A tap on a line that is whole does nothing and lets the tap through.
+function StatusLine:onTap()
+    if not self:isTruncated() then return end
+    UIManager:show(InfoMessage:new{ text = self.text })
+    return true
+end
 
 function StatusLine:_widget()
     if not self._w then
@@ -117,7 +138,10 @@ function StatusLine:getSize()
 end
 
 function StatusLine:paintTo(bb, x, y)
-    self:_widget():paintTo(bb, x, y)
+    local w = self:_widget()
+    local size = w:getSize()
+    self.dimen = Geom:new{ x = x, y = y, w = size.w, h = size.h }
+    w:paintTo(bb, x, y)
 end
 
 -- ---------------------------------------------------------------------------
@@ -667,5 +691,8 @@ function ScreenBase:makeRulesButtonConfig(en_text, fr_text)
         end,
     }
 end
+
+-- For specs.
+ScreenBase.StatusLine = StatusLine
 
 return ScreenBase
